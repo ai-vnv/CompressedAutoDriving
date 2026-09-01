@@ -2,10 +2,10 @@
 
 **A Closed-Loop Evaluation of Capability Loss and Recovery in Compressed Driving Policies**
 
-[![tests](https://img.shields.io/badge/tests-721%2F721%20pass-2ea44f)](#verification)
-[![bare clone](https://img.shields.io/badge/bare%20clone-378%2F378%20pass-2ea44f)](#verification)
+[![tests](https://github.com/ai-vnv/CompressedAutoDriving/actions/workflows/tests.yml/badge.svg)](https://github.com/ai-vnv/CompressedAutoDriving/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/ai-vnv/CompressedAutoDriving/branch/main/graph/badge.svg)](https://codecov.io/gh/ai-vnv/CompressedAutoDriving)
+[![full suite](https://img.shields.io/badge/full%20suite-721%2F721%20pass-2ea44f)](#verification)
 [![V%26V spec](https://img.shields.io/badge/V%26V%20spec-65%2F65%20pass-2ea44f)](#verification)
-[![coverage](https://img.shields.io/badge/coverage-84%25-2ea44f)](#verification)
 [![license](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
 
 Where does a compressed driving policy stop being able to drive, and what brings
@@ -203,19 +203,27 @@ the frozen configurations, or the protocol loader.
 python experiments/verification/verify_reported_numbers.py
 ```
 
-| Badge | What it measures | How it was obtained |
+| Badge | What it measures | Where the number comes from |
 |---|---|---|
-| tests 721/721 | full suite with the evaluation artifacts regenerated | `pytest tests -q` |
-| bare clone 378/378 | suite on a checkout with no downloaded data | `pytest tests -q` with `artifacts/` absent |
-| V&V spec 65/65 | reported numbers recomputed from the ledgers | the command above |
-| coverage 84% | statement coverage of `src/duckie_pomdp` under the full suite | `pytest tests -q --cov=src/duckie_pomdp` |
+| tests | the 378 artifact-independent tests on a clean machine | GitHub Actions, `.github/workflows/tests.yml` |
+| codecov | statement coverage of `src/duckie_pomdp` in that run | uploaded from the same workflow |
+| full suite 721/721 | the whole suite once `artifacts/` has been regenerated | measured locally, not reproducible in CI without the artifacts |
+| V&V spec 65/65 | reported numbers recomputed from the ledgers | the command above, run locally |
 
-The badges are measured values committed alongside the code, not a live
-service, so they describe the state of this commit. On a bare clone the same
-verifier reports 64/64 with one check skipped, because the one remaining
-document-hash check reads a study document that is not distributed here.
-Coverage on a bare clone is 57%, since the provenance suite that exercises the
-evaluation paths is not collected.
+The first two badges are live: the workflow installs the pinned dependencies on
+Python 3.10, brings up a virtual display for the fifteen tests that drive the
+real simulator, and uploads the coverage report. The last two are measured
+values that describe this commit, because both need the multi-gigabyte
+evaluation artifacts that are not distributed here.
+
+For reference, measured locally on the full artifacts: coverage is 84% with the
+provenance suite collected and 57% without it, and the verifier reports 64/64
+with one check skipped on a bare clone, since its remaining document-hash check
+reads a study document that is not distributed.
+
+Coverage reporting needs `CODECOV_TOKEN` in the repository secrets. Until it is
+set the workflow still runs and prints coverage in its own log; only the upload
+step is inert, and it is configured not to fail the run.
 
 ## Reproducing
 
