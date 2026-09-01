@@ -53,3 +53,9 @@ docs/
 
 # scratch space used when checking a bare-clone install
 .clonecheck/
+
+# coverage data
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
