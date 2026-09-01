@@ -38,8 +38,7 @@ Kandidat bounds V1 hasil F2 adalah `v_cmd in [0, 0.4] m/s` dan
 `omega_cmd in [-4, 4] rad/s`; nilainya belum permanen. Detail desain dan bukti ada di
 `IMPLEMENTATION_NOTES.md`.
 
-Domain contracts mengikuti `POMDP Problem Formulation Scaffold —
-Gym-Duckietown.md`. Jalankan contract gate dengan:
+Domain contracts mengikuti `docs/POMDP_FORMULATION_SCAFFOLD.md`. Jalankan contract gate dengan:
 
 ```bash
 export PYTHONPATH=src:/home/pannntastic/aivnv/duckie/src
