@@ -181,8 +181,9 @@ experiments/    evaluation runners, protocol-freeze scripts, the
                 every reported number from the ledgers
 src/            perception (YOLO, MobileNetV3), EKF belief, PPO environment,
                 compression (pruning / distillation / PTQ / QAT)
-tests/          375 tests that run on a bare clone, plus a provenance
-                suite that needs the regenerated artifacts (721 in total)
+tests/          375 tests that run on a bare clone, of which 344 need no
+                simulator, plus a provenance suite that needs the regenerated
+                artifacts (721 in total)
 maps/, scripts/ simulator maps and utilities
 ```
 
@@ -203,23 +204,34 @@ the frozen configurations, or the protocol loader.
 python experiments/verification/verify_reported_numbers.py
 ```
 
+The suite comes in three nested groups, and each badge names one of them.
+
+| Group | Size | Needs | Where it runs |
+|---|---|---|---|
+| core | 344 tests | nothing beyond the repository | GitHub Actions, every push |
+| core + simulator | 375 tests | a working Gym-Duckietown install | locally |
+| everything | 721 tests | the regenerated evaluation artifacts | locally |
+
+`tests/conftest.py` decides which groups to collect and prints the decision in
+the pytest header, so a run always says what it left out.
+
 | Badge | What it measures | Where the number comes from |
 |---|---|---|
-| tests | the 375 artifact-independent tests on a clean machine | GitHub Actions, `.github/workflows/tests.yml` |
-| codecov | statement coverage of `src/duckie_pomdp` in that run | uploaded from the same workflow |
-| full suite 721/721 | the whole suite once `artifacts/` has been regenerated | measured locally, not reproducible in CI without the artifacts |
+| tests | the 344 core tests on a clean machine | GitHub Actions, `.github/workflows/tests.yml` |
+| codecov | statement coverage of `src/duckie_pomdp` in that run, currently 52% | uploaded from the same workflow |
+| full suite 721/721 | every group, with the artifacts present | measured locally |
 | V&V spec 65/65 | reported numbers recomputed from the ledgers | the command above, run locally |
 
-The first two badges are live: the workflow installs the pinned dependencies on
-Python 3.10, brings up a virtual display for the fifteen tests that drive the
-real simulator, and uploads the coverage report. The last two are measured
-values that describe this commit, because both need the multi-gigabyte
-evaluation artifacts that are not distributed here.
+The first two badges are live. The last two are measured values describing this
+commit, because both need the multi-gigabyte evaluation artifacts that are not
+distributed here.
 
-For reference, measured locally on the full artifacts: coverage is 84% with the
-provenance suite collected and 57% without it, and the verifier reports 64/64
-with one check skipped on a bare clone, since its remaining document-hash check
-reads a study document that is not distributed.
+CI leaves the seven simulator modules out on purpose, with
+`SKIP_SIMULATOR_TESTS=1`. They pass against a local Gym-Duckietown install but
+depend on the host GL stack and on how the duckietown dependency chain resolves
+there; asserting that about a hosted runner would say more about GitHub than
+about this code. Coverage is correspondingly lower in CI than locally, where
+the full suite reaches 84%.
 
 Coverage reporting needs `CODECOV_TOKEN` in the repository secrets. Until it is
 set the workflow still runs and prints coverage in its own log; only the upload
@@ -243,11 +255,12 @@ Two things to know before running:
 
 - **The suite runs on a bare clone.** `pytest tests -q` collects 375 tests and
   all of them pass without any downloaded data: perception, belief, EKF,
-  environment, action mapping, and the compression transforms. A second group
-  of 346 tests is a provenance suite that re-derives reported numbers from the
-  evaluation ledgers, so it is collected only once `artifacts/` has been
-  regenerated, which brings the total to 721. `tests/conftest.py` decides this
-  and prints which mode it is in; nothing needs to be configured.
+  environment, action mapping, and the compression transforms. Set
+  `SKIP_SIMULATOR_TESTS=1` to leave out the seven modules that construct the
+  real simulator, which is what CI does, and 344 remain. The provenance suite
+  that re-derives reported numbers from the evaluation ledgers is collected
+  only once `artifacts/` has been regenerated, bringing the total to 721.
+  `tests/conftest.py` decides this and prints what it left out.
 
 - **Configuration files record absolute paths from the machine the study ran
   on.** They are deliberately left as they are, because the protocol gates

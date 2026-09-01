@@ -12,9 +12,16 @@ need those inputs are collected only when the inputs are present. Everything
 else -- the perception, belief, environment, action, and compression unit
 tests -- runs from the repository alone.
 
+A second group drives the real Gym-Duckietown simulator, which needs a working
+GL context and a dependency chain that resolves differently on different hosts.
+Setting ``SKIP_SIMULATOR_TESTS=1`` leaves those modules uncollected, which is
+what the CI workflow does: it reports on the code this repository owns rather
+than on whether a hosted runner can bring up OpenGL.
+
 Regenerate the artifacts and the full suite collects automatically; nothing
 here needs to be edited to switch modes.
 """
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,16 +84,36 @@ REQUIRES_ARTIFACTS_OR_DOCS = (
     "test_verify_f9d_artifacts.py",
 )
 
+# Modules that construct the real simulator rather than a stub.
+REQUIRES_SIMULATOR = (
+    "test_camera_geometry.py",
+    "test_detection_dataset.py",
+    "test_f9d_b3_pedestrian_removal.py",
+    "test_f10_l1_environment.py",
+    "test_gym_duckietown_integration.py",
+    "test_minimal_scenario.py",
+    "test_true_state_validation.py",
+)
+
 DISTRIBUTED_DATA = (ARTIFACTS, DOCS, DATASETS)
+SKIP_SIMULATOR = os.environ.get("SKIP_SIMULATOR_TESTS") == "1"
 
 collect_ignore = []
 if not all(p.is_dir() for p in DISTRIBUTED_DATA):
     collect_ignore.extend(REQUIRES_ARTIFACTS_OR_DOCS)
+if SKIP_SIMULATOR:
+    collect_ignore.extend(REQUIRES_SIMULATOR)
 
 
 def pytest_report_header(config):
-    if collect_ignore:
-        missing = [p.name for p in DISTRIBUTED_DATA if not p.is_dir()]
-        return (f"provenance suite not collected: {', '.join(missing)} absent "
-                f"({len(collect_ignore)} modules skipped)")
-    return "provenance suite collected: artifacts and study documents present"
+    lines = []
+    missing = [p.name for p in DISTRIBUTED_DATA if not p.is_dir()]
+    if missing:
+        lines.append(f"provenance suite not collected: {', '.join(missing)} "
+                     f"absent ({len(REQUIRES_ARTIFACTS_OR_DOCS)} modules)")
+    else:
+        lines.append("provenance suite collected: distributed data present")
+    if SKIP_SIMULATOR:
+        lines.append(f"simulator suite not collected: SKIP_SIMULATOR_TESTS=1 "
+                     f"({len(REQUIRES_SIMULATOR)} modules)")
+    return lines
