@@ -2,6 +2,12 @@
 
 **A Closed-Loop Evaluation of Capability Loss and Recovery in Compressed Driving Policies**
 
+[![tests](https://img.shields.io/badge/tests-721%2F721%20pass-2ea44f)](#verification)
+[![bare clone](https://img.shields.io/badge/bare%20clone-378%2F378%20pass-2ea44f)](#verification)
+[![V%26V spec](https://img.shields.io/badge/V%26V%20spec-65%2F65%20pass-2ea44f)](#verification)
+[![coverage](https://img.shields.io/badge/coverage-84%25-2ea44f)](#verification)
+[![license](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
+
 Where does a compressed driving policy stop being able to drive, and what brings
 that ability back?
 
@@ -170,8 +176,9 @@ models/         trained weights: actors A0-A9, YOLO11n, MobileNetV3 lane model
                 (each SHA256-verified against the study registries; MANIFEST.md)
 configs/        experiment configurations: curricula, acceptance criteria,
                 seeds, quantization settings, hash-pinned protocol provenance
-experiments/    evaluation runners, protocol-freeze scripts, integrity
-                verifiers, and the figure-generation code for the paper
+experiments/    evaluation runners, protocol-freeze scripts, the
+                figure-generation code, and verification/ which recomputes
+                every reported number from the ledgers
 src/            perception (YOLO, MobileNetV3), EKF belief, PPO environment,
                 compression (pruning / distillation / PTQ / QAT)
 tests/          378 tests that run on a bare clone, plus a provenance
@@ -183,6 +190,32 @@ Evaluation artifacts, roughly 4 GB of per-episode telemetry, rollout videos, and
 result ledgers, are intentionally not tracked. They regenerate from `configs/`
 and `experiments/` with the recorded seeds, using the tracked weights in
 `models/`.
+
+## Verification
+
+Every number the paper reports is recomputed from the evaluation ledgers rather
+than copied from a notebook. The specification lives in
+`experiments/verification/verify_reported_numbers.py`: each check restates a
+figure as printed in the manuscript and derives it again from the result CSVs,
+the frozen configurations, or the protocol loader.
+
+```bash
+python experiments/verification/verify_reported_numbers.py
+```
+
+| Badge | What it measures | How it was obtained |
+|---|---|---|
+| tests 721/721 | full suite with the evaluation artifacts regenerated | `pytest tests -q` |
+| bare clone 378/378 | suite on a checkout with no downloaded data | `pytest tests -q` with `artifacts/` absent |
+| V&V spec 65/65 | reported numbers recomputed from the ledgers | the command above |
+| coverage 84% | statement coverage of `src/duckie_pomdp` under the full suite | `pytest tests -q --cov=src/duckie_pomdp` |
+
+The badges are measured values committed alongside the code, not a live
+service, so they describe the state of this commit. On a bare clone the same
+verifier reports 64/64 with one check skipped, because the one remaining
+document-hash check reads a study document that is not distributed here.
+Coverage on a bare clone is 57%, since the provenance suite that exercises the
+evaluation paths is not collected.
 
 ## Reproducing
 
@@ -214,10 +247,10 @@ Two things to know before running:
   provenance chain the integrity verifiers check. Point them at your own
   checkout and expect the frozen-hash assertions to be the first thing that
   complains.
-- **The integrity verifiers** (`artifacts/integrity_phase_c.sh`,
-  `artifacts/integrity_final_45.sh`) recompute every reported number from the
-  artifact ledgers, so they need the evaluation artifacts to have been
-  regenerated first.
+- **The verification specification needs the artifacts.**
+  `experiments/verification/verify_reported_numbers.py` recomputes the reported
+  numbers from the ledgers, so it reports what is missing and exits early on a
+  checkout that has not regenerated them.
 
 ## License
 
