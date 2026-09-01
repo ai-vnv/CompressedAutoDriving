@@ -50,3 +50,6 @@ GATES.md
 /MANIFEST.md
 slides/
 docs/
+
+# scratch space used when checking a bare-clone install
+.clonecheck/
