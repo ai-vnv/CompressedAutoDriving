@@ -22,6 +22,28 @@ fixed and let the system under test change at every compression stage.
 
 ![Pipeline overview](assets/pipeline_overview.jpg)
 
+## All ten configurations, same scenario, same seed
+
+![Ten configurations driving C1 from the same seed](assets/rollouts_A0_A9_c1.gif)
+
+Every panel is media recorded during the evaluation episode itself, placed on a
+common simulation-step axis: when a configuration's episode ends, its panel
+freezes with the outcome and the step it ended on, while the others keep
+driving. This is C1, seed 180206, the one combination captured for all ten
+configurations, and C1 applies domain randomization, which is why the lane
+markings are not white.
+
+Read it as the pipeline in motion. `A2` and `A7`, both distilled on the hardest
+curriculum only, are already dead by step 98 and 104. `A1` and `A5`, pruned
+without a usable recovery, wander much longer and fail late, at step 695 and
+688. The recovered and reduced-precision configurations that keep the
+capability, `A3`, `A4`, `A6`, `A8`, `A9`, complete the route within a few steps
+of the original actor `A0`. The recorder keeps only the final 91 steps of an
+episode, so a panel reads "no frames recorded yet" until its own window opens.
+
+Regenerate it with
+`python experiments/paper_figures/gen_rollout_grid_gif.py`.
+
 ## Key results
 
 Verdicts are decided by the same preregistered acceptance checks on the same
@@ -67,6 +89,11 @@ anchored to.
    The quantization-aware model reproduces the original actions more closely
    than the post-training one and drives worse, while the unpruned INT8 control
    drives every curriculum and fails the numerical similarity thresholds.
+
+Negative and qualifying results belong next to the headline ones: no stable
+advantage was found between direct and progressive pruning, the distillation
+recovery is sensitive to the training seed, and a reserved evaluation split was
+never opened because no candidate met the full deployment criterion.
 
 ## How the policy sees: perception, EKF belief, 29 inputs
 
@@ -147,9 +174,8 @@ experiments/    evaluation runners, protocol-freeze scripts, integrity
                 verifiers, and the figure-generation code for the paper
 src/            perception (YOLO, MobileNetV3), EKF belief, PPO environment,
                 compression (pruning / distillation / PTQ / QAT)
-docs/           frozen protocols and per-study reports (F12 to F18)
-slides/         talk built from this work (Beamer source and PPTX)
-tests/          regression suite, 721 tests
+tests/          378 tests that run on a bare clone, plus a provenance
+                suite that needs the regenerated artifacts (721 in total)
 maps/, scripts/ simulator maps and utilities
 ```
 
@@ -157,22 +183,6 @@ Evaluation artifacts, roughly 4 GB of per-episode telemetry, rollout videos, and
 result ledgers, are intentionally not tracked. They regenerate from `configs/`
 and `experiments/` with the recorded seeds, using the tracked weights in
 `models/`.
-
-## The study, stage by stage
-
-| Study | Question | Report |
-|---|---|---|
-| F12 | historical compression pipeline and selection | `docs/F12_COMPRESSION_RESULTS.md` |
-| F15 | where capability is lost, and recovery | `docs/F15_*` |
-| F16 | pruning-schedule and training-seed robustness | `docs/F16_FINAL_SCOPE_CORRECTED_REPORT.md` |
-| F17 | placement of the compression methods, quantization routes | `docs/F17_FINAL_REPORT.md` |
-| F18 | reduced floating-point control | `docs/F18_FP16_CONTROL_REPORT.md` |
-
-Negative and qualifying results are reported alongside the headline findings: no
-stable advantage was found between direct and progressive pruning, the
-distillation recovery is sensitive to the training seed, and a reserved
-evaluation split was never opened because no candidate met the full deployment
-criterion.
 
 ## Reproducing
 
@@ -184,11 +194,19 @@ export PYTHONPATH=src:experiments
 export DUCKIETOWN_HEADLESS=1
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
 
-python -m pytest tests -q                     # 721 tests, about one minute
+python -m pytest tests -q
 python experiments/run_f17_optimization_method_order.py evaluate --pathway A6
 ```
 
 Two things to know before running:
+
+- **The suite runs on a bare clone.** `pytest tests -q` collects 378 tests and
+  all of them pass without any downloaded data: perception, belief, EKF,
+  environment, action mapping, and the compression transforms. A second group
+  of 343 tests is a provenance suite that re-derives reported numbers from the
+  evaluation ledgers, so it is collected only once `artifacts/` has been
+  regenerated, which brings the total to 721. `tests/conftest.py` decides this
+  and prints which mode it is in; nothing needs to be configured.
 
 - **Configuration files record absolute paths from the machine the study ran
   on.** They are deliberately left as they are, because the protocol gates

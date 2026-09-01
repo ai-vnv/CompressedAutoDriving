@@ -41,3 +41,12 @@ paper/
 # working backups of the slide deck
 slides-backup-*/
 *.orig
+
+# internal working notes, agent instructions, and the talk deck
+AGENTS.md
+IMPLEMENTATION_NOTES.md
+FORMULATION.md
+GATES.md
+/MANIFEST.md
+slides/
+docs/
