@@ -1,0 +1,40 @@
+{
+  "model": "models/actor_A6_kd_balanced_ptq_int8.pt",
+  "convention": "qint8 weights x1B + fp32 bias x4B + per-channel (fp32 scale + int32 zero point) x8B",
+  "layers": [
+    {
+      "layer": "fc1",
+      "weight_shape": [
+        64,
+        29
+      ],
+      "n_weights": 1856,
+      "n_bias": 64,
+      "channels": 64
+    },
+    {
+      "layer": "fc2",
+      "weight_shape": [
+        64,
+        64
+      ],
+      "n_weights": 4096,
+      "n_bias": 64,
+      "channels": 64
+    },
+    {
+      "layer": "out",
+      "weight_shape": [
+        2,
+        64
+      ],
+      "n_weights": 128,
+      "n_bias": 2,
+      "channels": 2
+    }
+  ],
+  "weights_qint8": 6080,
+  "biases_fp32": 130,
+  "quantized_channels": 130,
+  "logical_parameter_memory_bytes": 7640
+}

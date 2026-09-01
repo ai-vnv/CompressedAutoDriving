@@ -1,0 +1,27 @@
+# Minimal closed route: one long straight approach, one T-junction stop marking,
+# one stop sign, and exactly one dynamic Duckie pedestrian.
+tiles:
+- [curve_left/W, straight/W,      straight/W,      straight/W, curve_left/N]
+- [straight/S,   floor,           floor,           floor,      straight/N]
+- [straight/S,   floor,           floor,           floor,      straight/N]
+- [straight/S,   floor,           floor,           floor,      straight/N]
+- [curve_left/S, straight/E,      3way_left/E,     straight/E, curve_left/E]
+
+objects:
+  stop_sign:
+    kind: sign_stop
+    pos: [2.30, 3.95]
+    # Face the red sign panel toward the westbound approach camera. A rendered
+    # rotation sweep confirmed that 180 degrees shows the complete STOP face.
+    rotate: 180
+    height: 0.18
+  pedestrian:
+    kind: duckie
+    pos: [2.65, 3.14]
+    rotate: -90
+    height: 0.08
+    static: false
+
+start_tile: [1, 4]
+start_pose: [[0.065, 0.0, 0.4095], 0.0]
+tile_size: 0.585

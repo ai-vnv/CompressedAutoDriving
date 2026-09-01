@@ -1,0 +1,334 @@
+schema_version = 1
+experiment = "F10-PPO visual-lane belief curriculum v4 Codex dual-boundary"
+
+[provenance]
+scenario = "scenario_pomdp_v1.toml"
+pomdp_map = "../maps/pomdp_v1.yaml"
+pomdp_map_sha256 = "60a9f0c31a02d2b3f8244d7cb5860255e8145c6fd1066bef462006f17e1d1a33"
+small_loop_sha256 = "4c931485b643537e946a8941a20871ec65daec97f62f658b2c2c60d81eb46d89"
+experiment_loop_sha256 = "9a72b774565a24ee229b687e0cab7767295e81ffbf65c740a1018bd567f15848"
+action_config = "action_v1.toml"
+action_config_sha256 = "80154e4ff22d4d9be6ebc1d6bfcd2f7d29caa3458c18ab7859420d2940c4d94a"
+frozen_belief_config = "f9c_robust_belief_v1.toml"
+frozen_belief_config_sha256 = "359dc52020421c248bf6c26e036234191b2b97d24b505a66d85daa85b563704e"
+lane_belief_config = "lane_belief_v3_codex.toml"
+lane_belief_config_sha256 = "77e9277ed6a569718a818469d9ba179b3ec0640dbc23aa4b76794e853e5650b7"
+detector_checkpoint = "../artifacts/yolo_v1/best.pt"
+detector_checkpoint_sha256 = "3d4f816d440690493b856d25403a84a3249e4250599319c32569b97cb8d7482c"
+formulation_doc = "../docs/F10_PPO_VISUAL_V4_CODEX_FORMULATION.md"
+
+[observation]
+representation = "visual_lane_belief_v2"
+ordering = [
+  "lane_validity_probability",
+  "lane_lateral_error_mean_m",
+  "lane_lateral_error_std_m",
+  "lane_heading_error_mean_rad",
+  "lane_heading_error_std_rad",
+  "actual_linear_velocity_mps",
+  "actual_yaw_rate_rad_s",
+  "lane_curvature_mean_inv_m",
+  "lane_curvature_std_inv_m",
+  "stop_line_distance_m",
+  "pedestrian_existence_probability",
+  "pedestrian_range_mean_m",
+  "pedestrian_range_std_m",
+  "pedestrian_bearing_mean_rad",
+  "pedestrian_bearing_std_rad",
+  "pedestrian_radial_velocity_mean_mps",
+  "pedestrian_radial_velocity_std_mps",
+  "pedestrian_bearing_rate_mean_rad_s",
+  "pedestrian_bearing_rate_std_rad_s",
+  "stop_sign_existence_probability",
+  "stop_sign_range_mean_m",
+  "stop_sign_range_std_m",
+  "stop_sign_bearing_mean_rad",
+  "stop_sign_bearing_std_rad",
+  "stop_mode_none",
+  "stop_mode_required",
+  "stop_mode_satisfied",
+  "previous_linear_velocity_cmd_mps",
+  "previous_angular_velocity_cmd_rad_s",
+]
+normalization = "fixed_physical_scales"
+clip_normalized = 3.0
+
+[observation.scales]
+lane_validity_probability = 1.0
+lane_lateral_error_mean_m = 0.25
+lane_lateral_error_std_m = 0.25
+lane_heading_error_mean_rad = 0.75
+lane_heading_error_std_rad = 0.75
+actual_linear_velocity_mps = 0.4
+actual_yaw_rate_rad_s = 4.0
+lane_curvature_mean_inv_m = 5.0
+lane_curvature_std_inv_m = 5.0
+stop_line_distance_m = 2.0
+pedestrian_existence_probability = 1.0
+pedestrian_range_mean_m = 2.0
+pedestrian_range_std_m = 2.0
+pedestrian_bearing_mean_rad = 1.2
+pedestrian_bearing_std_rad = 3.141592653589793
+pedestrian_radial_velocity_mean_mps = 1.0
+pedestrian_radial_velocity_std_mps = 1.0
+pedestrian_bearing_rate_mean_rad_s = 4.0
+pedestrian_bearing_rate_std_rad_s = 3.141592653589793
+stop_sign_existence_probability = 1.0
+stop_sign_range_mean_m = 2.0
+stop_sign_range_std_m = 2.0
+stop_sign_bearing_mean_rad = 1.2
+stop_sign_bearing_std_rad = 3.141592653589793
+stop_mode_none = 1.0
+stop_mode_required = 1.0
+stop_mode_satisfied = 1.0
+previous_linear_velocity_cmd_mps = 0.4
+previous_angular_velocity_cmd_rad_s = 4.0
+
+[neutral]
+stop_line_distance_m = 2.0
+pedestrian_existence_probability = 0.0
+pedestrian_range_mean_m = 2.0
+pedestrian_range_std_m = 2.0
+pedestrian_bearing_mean_rad = 0.0
+pedestrian_bearing_std_rad = 3.141592653589793
+pedestrian_radial_velocity_mean_mps = 0.0
+pedestrian_radial_velocity_std_mps = 1.0
+pedestrian_bearing_rate_mean_rad_s = 0.0
+pedestrian_bearing_rate_std_rad_s = 3.141592653589793
+stop_sign_existence_probability = 0.0
+stop_sign_range_mean_m = 2.0
+stop_sign_range_std_m = 2.0
+stop_sign_bearing_mean_rad = 0.0
+stop_sign_bearing_std_rad = 3.141592653589793
+
+[action]
+normalized_low = -1.0
+normalized_high = 1.0
+minimum_linear_velocity_mps = 0.0
+maximum_linear_velocity_mps = 0.4
+minimum_angular_velocity_rad_s = -4.0
+maximum_angular_velocity_rad_s = 4.0
+
+[simulator]
+frame_rate_hz = 30
+frame_skip = 1
+camera_width_px = 640
+camera_height_px = 480
+domain_randomization = true
+dynamics_randomization = false
+
+[native_start]
+start_tile = [1, 0]
+base_local_x_m = 0.520
+base_local_z_m = 0.1755
+base_heading_rad = 3.141592653589793
+start_longitudinal_jitter_m = [-0.030, 0.030]
+start_lateral_jitter_m = [-0.020, 0.020]
+start_heading_jitter_rad = [-0.040, 0.040]
+
+[pomdp_start]
+start_longitudinal_range_m = [0.02, 0.16]
+start_lateral_offset_range_m = [-0.035, 0.035]
+start_heading_offset_range_rad = [-0.05, 0.05]
+map_tile_size_m = 0.585
+
+[stop_belief]
+existence_prior = 0.0
+detection_update_probability = 0.95
+miss_survival_probability = 0.97
+activation_probability = 0.70
+activation_distance_m = 1.5
+completion_zone_before_m = 0.18
+completion_zone_after_m = -0.05
+stop_speed_threshold_mps = 0.025
+hold_steps = 12
+range_std_m = 0.22
+bearing_std_rad = 0.06
+
+[reward]
+target_velocity_mps = 0.20
+progress_per_m = 5.0
+living_penalty = -0.002
+lane_lateral_weight = -0.012
+lane_lateral_scale_m = 0.10
+lane_heading_weight = -0.006
+lane_heading_scale_rad = 0.40
+yellow_warning_weight = -0.040
+lane_center_to_yellow_m = 0.117
+ego_half_width_m = 0.075
+yellow_warning_clearance_m = 0.030
+lane_departure_threshold_m = 0.20
+yellow_curve_recovery_enabled = true
+yellow_curve_min_abs_curvature_inv_m = 0.75
+yellow_curve_max_penetration_m = 0.035
+yellow_curve_exit_grace_steps = 15
+yellow_recovery_clear_steps = 3
+smooth_linear_change_weight = -0.002
+smooth_angular_change_weight = -0.002
+smooth_steering_weight = -0.0005
+pedestrian_safety_distance_m = 0.35
+pedestrian_unsafe_distance_m = 0.18
+pedestrian_collision_distance_m = 0.08
+pedestrian_proximity_weight = -0.080
+pedestrian_unsafe_penalty = -0.50
+pedestrian_collision_terminal_penalty = -8.0
+stop_approach_distance_m = 0.30
+stop_speed_threshold_mps = 0.025
+stop_hold_steps = 12
+stop_approach_speed_weight = -0.020
+stop_completion_bonus = 1.0
+stop_violation_penalty = -6.0
+lane_completion_bonus = 10.0
+route_completion_bonus = 2.0
+lane_failure_penalty = -8.0
+invalid_pose_penalty = -8.0
+route_success_progress_m = 1.25
+
+[ppo]
+implementation = "canonical_pytorch"
+hidden_sizes = [256, 256]
+activation = "tanh"
+learning_rate = 3.0e-4
+n_steps = 1024
+batch_size = 256
+n_epochs = 10
+gamma = 0.99
+gae_lambda = 0.95
+clip_range = 0.20
+entropy_coefficient = 0.01
+value_function_coefficient = 0.50
+max_gradient_norm = 0.50
+initial_log_std = -0.50
+training_seed = 62000
+device = "cuda"
+
+[curriculum.c0]
+name = "small_loop"
+map = "small_loop"
+pedestrian_active = false
+stop_active = false
+domain_randomization = true
+episode_horizon_steps = 1900
+training_steps = 61440
+checkpoint_interval_steps = 10240
+training_seeds = [62001,62002,62003,62004,62005,62006,62007,62008,62009,62010,62011,62012]
+development_seeds = [62101,62102,62103,62104]
+stage_final_seeds = [62201,62202,62203,62204]
+
+[curriculum.c1]
+name = "experiment_loop"
+map = "experiment_loop"
+pedestrian_active = false
+stop_active = false
+domain_randomization = true
+episode_horizon_steps = 2700
+training_steps = 40960
+checkpoint_interval_steps = 10240
+training_seeds = [63001,63002,63003,63004,63005,63006,63007,63008,63009,63010,63011,63012]
+development_seeds = [63101,63102,63103,63104]
+stage_final_seeds = [63201,63202,63203,63204]
+
+[curriculum.c2]
+name = "pedestrian"
+map = "pomdp_v1"
+pedestrian_active = true
+stop_active = false
+domain_randomization = true
+pedestrian_modes = ["stationary", "cross_left_to_right", "cross_right_to_left"]
+episode_horizon_steps = 300
+training_steps = 30720
+checkpoint_interval_steps = 10240
+training_seeds = [53001,53002,53003,53004,53005,53006,53007,53008,53009,53010,53011,53012]
+development_seeds = [53101,53102,53103,53104]
+stage_final_seeds = [53201,53202,53203,53204]
+
+[curriculum.c3]
+name = "stop"
+map = "pomdp_v1"
+pedestrian_active = false
+stop_active = true
+domain_randomization = true
+pedestrian_modes = ["stationary"]
+episode_horizon_steps = 360
+training_steps = 30720
+checkpoint_interval_steps = 10240
+training_seeds = [54001,54002,54003,54004,54005,54006,54007,54008,54009,54010,54011,54012]
+development_seeds = [54101,54102,54103,54104]
+stage_final_seeds = [54201,54202,54203,54204]
+
+[curriculum.c4]
+name = "combined"
+map = "pomdp_v1"
+pedestrian_active = true
+stop_active = true
+domain_randomization = true
+pedestrian_modes = ["stationary", "cross_left_to_right", "cross_right_to_left"]
+episode_horizon_steps = 360
+training_steps = 40960
+checkpoint_interval_steps = 10240
+training_seeds = [55001,55002,55003,55004,55005,55006,55007,55008,55009,55010,55011,55012]
+development_seeds = [55101,55102,55103,55104]
+stage_final_seeds = [55201,55202,55203,55204]
+
+[global_final]
+small_loop = [56001,56002,56003,56004]
+experiment_loop = [56101,56102,56103,56104]
+pedestrian = [56201,56202,56203,56204]
+stop = [56301,56302,56303,56304]
+combined = [56401,56402,56403,56404]
+
+[checkpoint_selection]
+rule = "safety_filter_then_stage_skill_then_progress_then_return"
+maximum_invalid_pose_rate = 0.25
+maximum_lane_failure_rate = 0.25
+maximum_collision_rate = 0.10
+maximum_stop_violation_rate = 0.25
+
+[acceptance.c0]
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_invalid_pose_rate = 0.25
+maximum_mean_abs_lateral_error_m = 0.09
+minimum_mean_progress_m = 3.5
+
+[acceptance.c1]
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_invalid_pose_rate = 0.25
+maximum_small_loop_completion_drop = 0.25
+
+[acceptance.c2]
+maximum_collision_rate = 0.10
+maximum_unsafe_episode_rate = 0.50
+minimum_mean_progress_m = 0.55
+maximum_stationary_fraction = 0.65
+maximum_c1_completion_drop = 0.25
+
+[acceptance.c3]
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_restart_rate = 0.50
+maximum_c2_collision_rate_increase = 0.10
+
+[acceptance.c4]
+maximum_collision_rate = 0.10
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_mean_progress_m = 0.55
+
+[wandb]
+entity = "vnv"
+project = "DuckiePOMDP"
+group = "f10-ppo-visual-v4-codex"
+log_interval_steps = 10
+online_training = true
+offline_smoke = true
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_v4_codex"
+
+
+[v4_changes]
+start_randomisation = true
+belief_uncertainty_refit = true
+

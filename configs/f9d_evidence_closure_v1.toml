@@ -1,0 +1,529 @@
+schema_version = 1
+parameters_frozen = true
+
+[provenance]
+# F9d tests the F9c estimator. It imports every parameter and defines none.
+f9c_config = "f9c_robust_belief_v1.toml"
+f9c_config_sha256 = "359dc52020421c248bf6c26e036234191b2b97d24b505a66d85daa85b563704e"
+checkpoint_sha256 = "3d4f816d440690493b856d25403a84a3249e4250599319c32569b97cb8d7482c"
+
+[split]
+development_seeds = [8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108]
+outlier_final_seeds = [8201, 8202, 8203, 8204]
+absence_final_seeds = [8301, 8302, 8303, 8304]
+forbidden_seeds = [
+  1101, 1102, 1103, 1104, 1105, 1106, 2101, 2102, 3101, 3102,
+  4101, 4102, 4103, 4104, 5101, 5102, 5103, 5104,
+  6101, 6102, 6103, 6104, 6105, 6106, 6107, 6108,
+  7101, 7102, 7103, 7104,
+]
+
+[minima]
+# Pre-registered before any F9d frame exists. Below the insufficient thresholds
+# the gate reports INSUFFICIENT EVIDENCE rather than a pass, exactly as F9c did.
+# A's support requires ALL THREE. Frames alone can be satisfied by two long
+# bursts, which is not the same evidence as scattered failures.
+minimum_outlier_frames = 50
+minimum_outlier_events = 12
+minimum_outlier_seeds = 3
+insufficient_outlier_frames = 30
+minimum_absence_runs_20 = 12
+minimum_absence_runs_40 = 4
+
+[criteria]
+outlier_rmse_ratio_max = 1.0          # Robust B must not exceed Baseline A on outlier frames
+absence_out_of_domain_floor = 0.50    # B1: P(e) stays above this through 40 frames
+absence_in_domain_ceiling = 0.10      # B2: P(e) below this after >= 20 in-domain misses
+recovery_frames_max = 2
+# Recovery after a localization-outlier event is the first subsequent
+# non-outlier frame whose absolute range-belief error is at most 0.10 m.
+# This definition is frozen before seeds 8201-8204 are rendered.
+outlier_recovery_error_m = 0.10
+# Pure OUTSIDE_DOMAIN prediction follows a closed-form recurrence; this is
+# only a numerical equality tolerance, not a fitted estimator parameter.
+absence_recurrence_abs_tolerance = 1e-9
+
+[artifacts]
+yield_probe_json = "../artifacts/f9d_yield_probe.json"
+frozen_config_json = "../artifacts/f9d_frozen_config.json"
+outlier_csv = "../artifacts/f9d_outlier_stress.csv"
+outlier_metrics_json = "../artifacts/f9d_outlier_metrics.json"
+absence_csv = "../artifacts/f9d_absence_stress.csv"
+absence_metrics_json = "../artifacts/f9d_absence_metrics.json"
+association_diagnostic_json = "../artifacts/f9d_association_diagnostic.json"
+absence_yield_probe_json = "../artifacts/f9d_absence_yield_probe.json"
+outlier_runtime_cache = "../artifacts/f9d_outlier_runtime_cache.npz"
+outlier_evaluation_truth = "../artifacts/f9d_outlier_evaluation_truth.npz"
+
+# Task 3: outlier-eliciting scenarios for the development-seed (8101-8108)
+# yield probe. NATURAL outliers only -- no GT-derived error is injected
+# anywhere in these scenarios; every field here only shapes geometry
+# (pedestrian mode, ego start offset/heading, ego motion, episode length).
+#
+# F9c's own data (calibration seeds 6101-6108, artifacts/f9c_calibration.csv)
+# showed every one of its 18 natural outlier frames came from a CROSSING
+# pedestrian scenario -- zero from any stationary/approach scenario despite
+# those contributing more than half of F9c's frames. Every scenario below is
+# therefore a crossing-pedestrian scenario; none are stationary/approach.
+# `use_for_final = false` on every entry: these are development-seed-only
+# scenarios until Task 3's probe confirms the yield and the config is frozen
+# (Task 5). They must never be read by the final-evaluation render (Task 6).
+#
+# ITERATION 3 (this matrix). Iteration 1 (6 scenarios) established that
+# CROSSING + far range + moderate ego turning (angular_velocity_rad_s~0.8)
+# with an edge-biasing heading offset is the effective combination; edge
+# framing alone (no turn) is weak but nonzero; near-range + a LARGE angular
+# rate (1.2 rad/s) is counterproductive (drove the ego off-road in 8/8
+# episodes before much exposure accumulated). Iteration 2 (8 scenarios)
+# concentrated on that lever across both crossing directions plus a
+# steeper-angular variant and a gentler near-range turn, and gave a much
+# larger, still-clean signal (66 frames / 50 events / 8-of-8 seeds; final
+# seeds are 4, so the projection needs mean-per-seed frames >= 12.5 to clear
+# the 50-frame minimum -- observed mean was 8.25):
+#
+#   scenario (iter 2)                       events  frames  per-frame rate*
+#   cross_far_edge_turning_right_to_left      11      15     1.23%
+#   cross_far_edge_turning_left_to_right       8      14     1.74%  (best)
+#   cross_far_edge_turning_left_to_right_steep 9      12     1.61%
+#   cross_far_edge_turning_right_to_left_steep 8       9     0.80%  (worst
+#                                                                far variant)
+#   cross_near_edge_right_to_left              5       5     0.56%
+#   cross_near_edge_turning_right_to_left      4       5     0.62%
+#   cross_near_edge_turning_left_to_right      4       5     0.62%
+#   cross_near_edge_left_to_right              1       1     0.11%  (weakest)
+#   * frames / actual rendered frames (accounts for early terminations),
+#     not frames / intended steps.
+#
+# Two readings drove this iteration's changes. (1) The LEFT_TO_RIGHT turning
+# direction (angular_velocity_rad_s NEGATIVE, heading offset POSITIVE) has a
+# consistently higher per-frame rate than its RIGHT_TO_LEFT mirror at the
+# same |angular rate| -- the map/route is not symmetric under that mirror,
+# so the two directions are genuinely different scenarios, not duplicates.
+# (2) The "steep" angular=1.0 rad/s variants underperformed their
+# angular=0.8 counterparts per frame -- steeper turning does not mean more
+# outliers; 0.8 rad/s looks closer to a local optimum than 1.0. This
+# iteration therefore: drops the two weakest performers
+# (cross_near_edge_left_to_right, cross_far_edge_turning_right_to_left_steep)
+# in favor of MORE scenarios near the confirmed-effective angular~0.8-0.9
+# rad/s band, biased toward the higher-yield LEFT_TO_RIGHT direction, at
+# THREE ego-start-offset ranges (0.0 "far", 0.20 "mid", 0.35 "near") so the
+# added exposure is still genuinely new geometry, not a duplicate of an
+# existing scenario at greater length -- iteration 2 already showed that
+# lengthening a saturating scenario (steps 130->170 on the R2L far-turn
+# scenario) bought only a proportionally small increase in actual rendered
+# frames once the ego's own invalid-pose ceiling was reached.
+
+[[outlier_scenario_matrix]]
+name = "cross_near_edge_right_to_left"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 110
+ego_start_x_offset_m = 0.45
+ego_heading_offset_rad = -0.15
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_near_edge_turning_right_to_left"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.10
+angular_velocity_rad_s = 0.6
+steps = 100
+ego_start_x_offset_m = 0.35
+ego_heading_offset_rad = -0.15
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_near_edge_turning_left_to_right"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.10
+angular_velocity_rad_s = -0.6
+steps = 100
+ego_start_x_offset_m = 0.35
+ego_heading_offset_rad = 0.15
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_far_edge_turning_right_to_left"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.8
+steps = 170
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = -0.20
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_far_edge_turning_left_to_right"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = -0.8
+steps = 170
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.20
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_far_edge_turning_left_to_right_steep"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = -1.0
+steps = 150
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.25
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_far_edge_turning_left_to_right_gentle"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = -0.7
+steps = 170
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.18
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_far_edge_turning_right_to_left_mid_rate"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.9
+steps = 160
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = -0.22
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_mid_edge_turning_right_to_left"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.8
+steps = 150
+ego_start_x_offset_m = 0.20
+ego_heading_offset_rad = -0.20
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_mid_edge_turning_left_to_right"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = -0.8
+steps = 150
+ego_start_x_offset_m = 0.20
+ego_heading_offset_rad = 0.20
+use_for_final = true
+
+# ITERATION 4 (fix round 1, coordinator-directed). Iteration 3's projection
+# (58.0 frames, mean 14.5/seed, stdev 8.54/seed) cleared all three
+# pre-registered minima, but the coordinator's exhaustive resample of all
+# C(8,4)=70 four-seed subsets of the development data found a 22.9% chance
+# of a 4-seed frame sum landing BELOW the 50-frame minimum (min subset sum
+# 31, median 58) -- a real, quantified risk against an un-rerenderable
+# final seed. Events (0/70 below 12) and seed-count (0/70 below 3) carry no
+# such risk. FIX: raise the yield, not lower the minimum. Target ~21
+# frames/seed on development seeds (~1.45x iteration 3's 14.5), per the
+# coordinator's own scaling analysis (1.45x -> ~4.3% resampled fail rate).
+#
+# Two explicit constraints from the coordinator, both honored below:
+#   (1) breadth over depth -- every addition below is a NEW named scenario
+#       at a novel offset/heading/rate combination, none is a lengthened
+#       copy of an existing one. No `steps` value below exceeds 170 (the
+#       existing maximum), and several new scenarios explicitly probe
+#       PARAMETER GAPS the first 10 scenarios left untested (offset 0.10 and
+#       0.30 were never tried; the mid_rate 0.9 rad/s variant existed only
+#       for right_to_left, never its left_to_right mirror; the confirmed-
+#       effective 0.8 rad/s rate was never tried at near range, only the
+#       deliberately gentle 0.6 rad/s was).
+#   (2) reduce cross_mid_edge_turning_right_to_left's 40%-of-frames /
+#       29%-of-events concentration -- none of the 7 new scenarios below
+#       duplicate its exact (offset=0.20, angular=0.8, right_to_left)
+#       recipe; they sample different offsets, different angular rates, or
+#       the opposite direction, so the dominant scenario's SHARE of the
+#       total falls even if its own raw count is untouched.
+
+[[outlier_scenario_matrix]]
+name = "cross_offset10_turning_right_to_left"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.8
+steps = 160
+ego_start_x_offset_m = 0.10
+ego_heading_offset_rad = -0.20
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_offset10_turning_left_to_right"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = -0.8
+steps = 160
+ego_start_x_offset_m = 0.10
+ego_heading_offset_rad = 0.20
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_offset30_turning_right_to_left"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.15
+angular_velocity_rad_s = 0.75
+steps = 140
+ego_start_x_offset_m = 0.30
+ego_heading_offset_rad = -0.18
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_offset30_turning_left_to_right"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.15
+angular_velocity_rad_s = -0.75
+steps = 140
+ego_start_x_offset_m = 0.30
+ego_heading_offset_rad = 0.18
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_far_edge_turning_left_to_right_mid_rate"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = -0.9
+steps = 160
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.22
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_near_edge_turning_right_to_left_full_rate"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.15
+angular_velocity_rad_s = 0.8
+steps = 110
+ego_start_x_offset_m = 0.35
+ego_heading_offset_rad = -0.20
+use_for_final = true
+
+[[outlier_scenario_matrix]]
+name = "cross_near_edge_turning_left_to_right_full_rate"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.15
+angular_velocity_rad_s = -0.8
+steps = 110
+ego_start_x_offset_m = 0.35
+ego_heading_offset_rad = 0.20
+use_for_final = true
+
+# ---------------------------------------------------------------------------
+# Task 4: absence scenarios (B1 genuine out-of-domain, B2 controlled
+# in-domain detector dropout, B3 controlled target disappearance -- kept
+# strictly apart per-row via `kind`, never merged in the yield probe or the
+# final analysis). `use_for_final = false` on every entry until Task 5
+# freezes this matrix, mirroring Task 3's outlier_scenario_matrix discipline.
+#
+# B1: STATIONARY pedestrian, straight-driving ego (angular_velocity_rad_s =
+# 0.0 always, to keep invalid-pose risk near zero per Task 3's own finding
+# that straight-line scenarios complete cleanly). The ego simply drives
+# forward past the fixed pedestrian; once the ego's position passes the
+# pedestrian's, the pedestrian falls behind the camera (y_forward <= 0),
+# which `PredictedObservabilityModel` classifies OUTSIDE_DOMAIN and GT
+# silhouette sampling reports not eligible-visible -- entirely natural, no
+# intervention. `steps` is sized so each scenario keeps running well past
+# that crossing point.
+#
+# B2: STATIONARY pedestrian, near-zero ego motion (linear_velocity_mps in
+# {0.0, 0.05}, angular always 0.0) so the pedestrian stays eligible-visible
+# for the WHOLE episode -- B2 must never let the pedestrian leave the frame
+# on its own, or a dropout run would be contaminated by genuine absence.
+# `dropout_window_frames`/`dropout_warmup_frames` configure a
+# `DetectorDropout` instance per scenario; `dropout_warmup_frames` gives the
+# track time to become active (detected, associated, gated, existence >=
+# initialization_threshold) before the window starts, so the run tests an
+# ESTABLISHED track's decay, not a track that was never allowed to form.
+#
+# B3: STATIONARY pedestrian, near-zero ego motion (same reasoning as B2).
+# `removal_warmup_frames`/`removal_tail_frames` configure a
+# `TargetRemovalScheduler`; `removal_tail_frames` is a guaranteed floor on
+# the run length regardless of where the seed places the switch frame.
+
+[[absence_scenario_matrix]]
+name = "b1_pass_slow"
+kind = "B1"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.15
+angular_velocity_rad_s = 0.0
+steps = 230
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.0
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b1_pass_medium"
+kind = "B1"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.0
+steps = 190
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.0
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b1_pass_fast"
+kind = "B1"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.25
+angular_velocity_rad_s = 0.0
+steps = 160
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.0
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b1_pass_offset_left"
+kind = "B1"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.0
+steps = 190
+ego_start_x_offset_m = 0.15
+ego_heading_offset_rad = 0.0
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b1_pass_offset_right"
+kind = "B1"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.0
+steps = 190
+ego_start_x_offset_m = -0.15
+ego_heading_offset_rad = 0.0
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b2_stationary_dropout20a"
+kind = "B2"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 70
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.0
+dropout_window_frames = 22
+dropout_warmup_frames = 20
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b2_stationary_dropout20b"
+kind = "B2"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 70
+ego_start_x_offset_m = 0.15
+ego_heading_offset_rad = 0.05
+dropout_window_frames = 24
+dropout_warmup_frames = 20
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b2_stationary_dropout45a"
+kind = "B2"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 95
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.0
+dropout_window_frames = 45
+dropout_warmup_frames = 25
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b2_stationary_dropout45b"
+kind = "B2"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 95
+ego_start_x_offset_m = -0.15
+ego_heading_offset_rad = -0.05
+dropout_window_frames = 48
+dropout_warmup_frames = 25
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b2_slow_approach_dropout25"
+kind = "B2"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.05
+angular_velocity_rad_s = 0.0
+steps = 80
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.0
+dropout_window_frames = 25
+dropout_warmup_frames = 20
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b2_slow_approach_dropout45"
+kind = "B2"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.05
+angular_velocity_rad_s = 0.0
+steps = 100
+ego_start_x_offset_m = 0.10
+ego_heading_offset_rad = 0.0
+dropout_window_frames = 45
+dropout_warmup_frames = 25
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b3_removal_run20a"
+kind = "B3"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 70
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.0
+removal_warmup_frames = 15
+removal_tail_frames = 20
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b3_removal_run20b"
+kind = "B3"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 70
+ego_start_x_offset_m = 0.15
+ego_heading_offset_rad = 0.05
+removal_warmup_frames = 15
+removal_tail_frames = 20
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b3_removal_run45a"
+kind = "B3"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 95
+ego_start_x_offset_m = 0.0
+ego_heading_offset_rad = 0.0
+removal_warmup_frames = 15
+removal_tail_frames = 45
+use_for_final = true
+
+[[absence_scenario_matrix]]
+name = "b3_removal_run45b"
+kind = "B3"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 95
+ego_start_x_offset_m = -0.15
+ego_heading_offset_rad = -0.05
+removal_warmup_frames = 15
+removal_tail_frames = 45
+use_for_final = true

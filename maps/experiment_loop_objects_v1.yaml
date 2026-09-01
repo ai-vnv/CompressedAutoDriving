@@ -1,0 +1,32 @@
+# Gym-Duckietown's native experiment_loop geometry with two deliberately
+# separated POMDP objects.  The Duckie crosses the eastbound straight at
+# (x=1.4625, z=2.1645); the stop line is on the later northbound straight at
+# (x=2.1645, z=1.4625).  Runtime stage configuration decides which object is
+# visible, so C2 is Duckie-only and C3 is stop-sign-only.
+tiles:
+- [curve_left/W, straight/W,    curve_left/N,  floor]
+- [straight/S,   floor,         curve_right/W, curve_left/N]
+- [curve_left/S, curve_right/E, floor,         straight/N]
+- [floor,        curve_left/S,  straight/E,    curve_left/E]
+
+objects:
+  stop_sign:
+    kind: sign_stop
+    # Gym-Duckietown YAML object coordinates are tile-scaled. These values
+    # render at world (x=2.3000, z=1.4050) m for tile_size=0.585.
+    pos: [3.9316239316, 1.4017094017]
+    # Provisional orientation; the real-render orientation gate freezes the
+    # final value before C3 training.
+    rotate: 90
+    height: 0.18
+  pedestrian:
+    kind: duckie
+    # Runtime explicit-path setup replaces this with the exact world endpoint.
+    pos: [2.5000, 2.0598290598]
+    rotate: -90
+    height: 0.08
+    static: false
+
+start_tile: [1, 3]
+start_pose: [[0.2706, 0.0, 0.3144], -0.7853981633974483]
+tile_size: 0.585

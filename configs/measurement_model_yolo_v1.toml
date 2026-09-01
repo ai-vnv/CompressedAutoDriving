@@ -1,0 +1,142 @@
+schema_version = 1
+status = "candidate_for_F9_not_applied_to_frozen_F7"
+
+[source]
+checkpoint_sha256 = "3d4f816d440690493b856d25403a84a3249e4250599319c32569b97cb8d7482c"
+split = "frozen_test"
+evaluation_config_sha256 = "a90729544a71c5b75a6002081705a685e9d348957913732bed23c7ccd1d60d0c"
+
+[measurement]
+range_semantics = "object_origin"
+pixel_reference = "bbox_bottom_center"
+range_value = "raw_projected_yolo_range"
+f5b_calibration_applied = false
+selection_rule = "lower_global_RMSE_without_refitting"
+raw_range_rmse_m = 0.17268536416804336
+f5b_calibrated_range_rmse_m = 0.1749432977184382
+
+[covariance]
+structure = "diagonal"
+use_off_diagonal = false
+empirical_correlation = 0.060573046585975815
+empirical_covariance_m_rad = 0.00040420157671262045
+
+[noise.global]
+sample_count = 146
+range_bias_m = 0.10414405418918063
+sigma_range_m = 0.1382212280301614
+bearing_bias_rad = -0.006880298128363682
+sigma_bearing_rad = 0.05322229015586917
+
+[noise.duckie]
+sample_count = 84
+range_bias_m = 0.13802689631722997
+sigma_range_m = 0.16473637239680444
+bearing_bias_rad = 0.004280471383037249
+sigma_bearing_rad = 0.04755992781629845
+
+[noise.stop_sign]
+sample_count = 62
+range_bias_m = 0.058238268080210556
+sigma_range_m = 0.06903189241757215
+bearing_bias_rad = -0.0220013406921972
+sigma_bearing_rad = 0.057022840536570675
+
+[noise.duckie.by_distance.far]
+sample_count = 19
+range_bias_m = 0.29914021516561273
+sigma_range_m = 0.24116473400389182
+bearing_bias_rad = 0.0026651160891638438
+sigma_bearing_rad = 0.04917300200349257
+
+[noise.duckie.by_distance.medium]
+sample_count = 34
+range_bias_m = 0.14161898768255565
+sigma_range_m = 0.10498014640745212
+bearing_bias_rad = 0.010232229616644264
+sigma_bearing_rad = 0.044355431687589264
+
+[noise.duckie.by_distance.near]
+sample_count = 31
+range_bias_m = 0.03534031036431557
+sigma_range_m = 0.026691473260226892
+bearing_bias_rad = -0.00125720698338352
+sigma_bearing_rad = 0.0506915197304285
+
+[noise.stop_sign.by_distance.medium]
+sample_count = 22
+range_bias_m = 0.11744928579148319
+sigma_range_m = 0.07923431164412238
+bearing_bias_rad = -0.02562600129948599
+sigma_bearing_rad = 0.031823255423428565
+
+[noise.stop_sign.by_distance.near]
+sample_count = 40
+range_bias_m = 0.025672208339010617
+sigma_range_m = 0.03174304767498247
+bearing_bias_rad = -0.020007777358188365
+sigma_bearing_rad = 0.06729817732962647
+
+[detection.stop_sign]
+sample_count = 62
+probability = 1.0
+
+[detection.stop_sign.by_distance.medium]
+sample_count = 22
+probability = 1.0
+
+[detection.stop_sign.by_distance.near]
+sample_count = 40
+probability = 1.0
+
+[detection.stop_sign.by_fov.center]
+sample_count = 18
+probability = 1.0
+
+[detection.stop_sign.by_fov.edge_fov]
+sample_count = 10
+probability = 1.0
+
+[detection.stop_sign.by_fov.mid_fov]
+sample_count = 34
+probability = 1.0
+
+[false_alarm.stop_sign]
+negative_frame_count = 102
+false_positive_count = 7
+false_positives_per_negative_frame = 0.06862745098039216
+negative_frame_event_probability = 0.058823529411764705
+
+[detection.duckie]
+sample_count = 84
+probability = 1.0
+
+[detection.duckie.by_distance.far]
+sample_count = 19
+probability = 1.0
+
+[detection.duckie.by_distance.medium]
+sample_count = 34
+probability = 1.0
+
+[detection.duckie.by_distance.near]
+sample_count = 31
+probability = 1.0
+
+[detection.duckie.by_fov.center]
+sample_count = 36
+probability = 1.0
+
+[detection.duckie.by_fov.edge_fov]
+sample_count = 17
+probability = 1.0
+
+[detection.duckie.by_fov.mid_fov]
+sample_count = 31
+probability = 1.0
+
+[false_alarm.duckie]
+negative_frame_count = 80
+false_positive_count = 0
+false_positives_per_negative_frame = 0.0
+negative_frame_event_probability = 0.0

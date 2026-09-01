@@ -1,0 +1,43 @@
+{
+  "name": "duckie-pomdp-yolo-v1",
+  "purpose": "F8-prep baseline YOLO training without disturbing the validated Gym-Duckietown environment",
+  "base_environment": {
+    "virtualenv": "/home/pannntastic/aivnv/duckie/.venv",
+    "python": "3.10.20",
+    "source_overlay": "/home/pannntastic/aivnv/duckie/src",
+    "gym_duckietown": "6.2.0"
+  },
+  "hardware": {
+    "accelerator": "NVIDIA RTX 4060 Laptop GPU",
+    "cuda_required": true
+  },
+  "locked_existing_packages": {
+    "numpy": "1.26.4",
+    "torch": "2.12.1",
+    "opencv-python": "5.0.0.93",
+    "pillow": "12.3.0"
+  },
+  "install_phases": [
+    {
+      "reason": "Install the Torch-matched vision extension without allowing resolver changes to the validated stack",
+      "command": "python -m pip install --no-deps torchvision==0.27.1"
+    },
+    {
+      "reason": "Install pinned runtime dependencies required by Ultralytics",
+      "command": "python -m pip install nvidia-ml-py==13.610.43 ultralytics-thop==2.1.6 polars==1.43.2 requests==2.34.2 psutil==7.2.2"
+    },
+    {
+      "reason": "Install the pinned YOLO framework while preserving the validated dependency versions",
+      "command": "python -m pip install --no-deps ultralytics==8.4.116"
+    }
+  ],
+  "environment": {
+    "PYTHONPATH": "/home/pannntastic/aivnv/duckie-pomdp/src:/home/pannntastic/aivnv/duckie/src",
+    "DUCKIETOWN_HEADLESS": "1"
+  },
+  "validation": {
+    "import_smoke": "python -c \"import cv2, numpy, torch, torchvision, ultralytics; print(cv2.__version__, numpy.__version__, torch.__version__, torchvision.__version__, ultralytics.__version__)\"",
+    "cuda_witness": "Seeded CUDA tensor convolution followed by a YOLO forward pass",
+    "regression_suite": "pytest -q"
+  }
+}

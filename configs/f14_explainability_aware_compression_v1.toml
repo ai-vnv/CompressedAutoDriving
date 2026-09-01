@@ -1,0 +1,160 @@
+schema_version = 1
+experiment = "F14 Explainability-Aware Compression Diagnostics v1"
+
+[frozen]
+policy_config = "f10_ppo_visual_objects_v30.toml"
+policy_config_sha256 = "85e2cbd321e2db53de270e3c0b885a723137d17e94af3640ed5a8a9f917fe829"
+original_checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/ppo_selected.pt"
+original_checkpoint_sha256 = "02e898ce12d71f97016d50ed8a40574807e6d2fd995fc9f0dcd24f357f2c6250"
+f12_config = "f12_belief_ppo_compression_v1.toml"
+f12_config_sha256 = "890932fc8769df990bdd62c16b1759b3bb2a4cddda675331fd8cbcd387e40aca"
+f13_config = "f13_explain_compressed_v1.toml"
+f13_config_sha256 = "ae38acac5e8dcd7c9fc70c7e7fefba053a5db82be8f5c3b39498729013fed194"
+actor_registry = "../artifacts/f12_belief_ppo_compression_v1/final/ablation_registry.json"
+actor_registry_sha256 = "4160df2cff9162ce89288aa3a405e6f2d8ecf0578e4aa9f365db71e4acdcb91b"
+model_selection = "../artifacts/f12_belief_ppo_compression_v1/final/model_selection.json"
+model_selection_sha256 = "2f7e710c2d6c7624e94b97bd3f3d5b5b3595b0b7e477e98ba02bd5cad671aea0"
+observation_dimension = 29
+action_dimension = 2
+observation_clip = 3.0
+maximum_linear_velocity_mps = 0.4
+maximum_angular_velocity_rad_s = 4.0
+
+[actors.A0]
+name = "B-PPO"
+path = "../artifacts/f12_belief_ppo_compression_v1/baseline/a0_original_actor.pt"
+sha256 = "713d26d93488a17fae246b227e1de38f51501dc87a3d20ac6176036a8a8e64c5"
+architecture = [29, 256, 256, 2]
+precision = "FP32"
+
+[actors.A1]
+name = "B-PPO-P"
+path = "../artifacts/f12_belief_ppo_compression_v1/pruning/p75/actor_pruned_fp32.pt"
+sha256 = "6e4ff154a209f44daf5f6ba45415ce47d0d4b60506aed28689e3795113da3904"
+architecture = [29, 64, 64, 2]
+precision = "FP32"
+
+[actors.A2]
+name = "B-PPO-PD"
+path = "../artifacts/f12_belief_ppo_compression_v1/prune_distill/pd75/actor_pruned_distilled_fp32.pt"
+sha256 = "fd79dba7c2b4aa63bdcbe0e28f84847e15ea15baba33a8e927e6b6136b18a69f"
+architecture = [29, 64, 64, 2]
+precision = "FP32"
+
+[actors.A3]
+name = "B-PPO-Q"
+path = "../artifacts/f12_belief_ppo_compression_v1/quant_only/actor_int8.pt"
+sha256 = "b79c2b4c489826cf7ea4853d7104be1630356deea0611138c9e606d0740b179d"
+architecture = [29, 256, 256, 2]
+precision = "INT8"
+
+[actors.A4]
+name = "B-PPO-QD"
+path = "../artifacts/f12_belief_ppo_compression_v1/quant_distill/actor_int8.pt"
+sha256 = "ad5ba8acd0c86ac315d6b65f9b6a419fa558c14cb405b41090e38eb0ab0f8dba"
+architecture = [29, 256, 256, 2]
+precision = "INT8"
+
+[actors.A5]
+name = "B-PPO-PQ"
+path = "../artifacts/f12_belief_ppo_compression_v1/prune_quant/actor_int8.pt"
+sha256 = "cf0c093c7523ac1188e0b94f7373277477eed8fac85ca3334498c3528bdf4358"
+architecture = [29, 64, 64, 2]
+precision = "INT8"
+
+[actors.A6]
+name = "B-PPO-PDQ"
+path = "../artifacts/f12_belief_ppo_compression_v1/prune_distill_quant/actor_int8.pt"
+sha256 = "773ffb9fb5e0cec24b21f892986de27960f32e64477024a41e88b7c953f09aa7"
+architecture = [29, 64, 64, 2]
+precision = "INT8"
+
+[actors.A7]
+name = "B-PPO-PDQD"
+path = "../artifacts/f12_belief_ppo_compression_v1/prune_distill_quant_distill/actor_int8.pt"
+sha256 = "f8e4e3ae5c43028d7b5d08e64c31d20dcce28153fb102ffac53a3b1c7b7cbc7e"
+architecture = [29, 64, 64, 2]
+precision = "INT8"
+
+[groups]
+Lane = ["lane_validity_probability", "lane_lateral_error_mean_m", "lane_lateral_error_std_m", "lane_heading_error_mean_rad", "lane_heading_error_std_rad", "lane_curvature_mean_inv_m", "lane_curvature_std_inv_m"]
+Ego = ["actual_linear_velocity_mps", "actual_yaw_rate_rad_s"]
+StopLine = ["stop_line_distance_m"]
+Pedestrian = ["pedestrian_existence_probability", "pedestrian_range_mean_m", "pedestrian_range_std_m", "pedestrian_bearing_mean_rad", "pedestrian_bearing_std_rad", "pedestrian_radial_velocity_mean_mps", "pedestrian_radial_velocity_std_mps", "pedestrian_bearing_rate_mean_rad_s", "pedestrian_bearing_rate_std_rad_s"]
+Stop = ["stop_sign_existence_probability", "stop_sign_range_mean_m", "stop_sign_range_std_m", "stop_sign_bearing_mean_rad", "stop_sign_bearing_std_rad", "stop_mode_none", "stop_mode_required", "stop_mode_satisfied"]
+PreviousAction = ["previous_linear_velocity_cmd_mps", "previous_angular_velocity_cmd_rad_s"]
+
+[development]
+source_dataset = "../artifacts/f12_belief_ppo_compression_v1/datasets/development_public_actor_states.npz"
+source_dataset_sha256 = "2cd50fae6bc4ac248f04563763c8c6968cf9429cfebe2e48ed0d19189018d47e"
+source_manifest = "../artifacts/f12_belief_ppo_compression_v1/datasets/development_manifest.json"
+source_manifest_sha256 = "1726efa5915b3cb4eef2c467bc6531770b4b93ff16fab14e956422dfd4073b0e"
+states_per_phase = 100
+phases = ["nominal", "lane_curve", "pedestrian_relevant", "stop_required", "stop_satisfied"]
+draw_seeds = [2026081511, 2026081512, 2026081513, 2026081514, 2026081515, 2026081516]
+references_per_draw = 4
+require_cross_seed_reference = true
+require_distinct_reference_seeds_within_draw = true
+
+[final]
+factual_trace = "../artifacts/f11_ppo_explanation_v2/r004/locked_public_trace.npz"
+factual_trace_sha256 = "a125ffa0c26908380b83270752140e2daf006fe73f5dac4191321a570c3881d6"
+reference_draws = "../artifacts/f11_ppo_explanation_v2/r004/reference_draws.npz"
+reference_draws_sha256 = "ab3d0bc112dbcc21d4a909b8586eafbe3cca9c4eefb1cac6a2e6de4545e1b16f"
+frozen_r004_attribution = "../artifacts/f11_ppo_explanation_v2/r004/final_mean_attribution.npz"
+frozen_r004_attribution_sha256 = "e7dfb24485862285c6690ffbaaf55f60c395b3a58dfc6113b66bafcc3bbaea4d"
+draws = 6
+references_per_draw = 4
+effective_references = 24
+reuse_reference_assignments_exactly = true
+
+[shapley]
+method = "phase-conditioned exact group Shapley"
+players = 6
+coalitions = 64
+aggregation = "equal mean over complete same-phase reference rows"
+actor_batch_size = 4096
+state_batch_size = 16
+efficiency_absolute_tolerance = 0.00001
+signed_deadband = 0.000001
+
+[reference_calibration]
+minimum_group_spearman_floor = 0.50
+maximum_group_share_l1_ceiling = 0.75
+minimum_top_group_agreement_floor = 0.50
+minimum_top_two_jaccard_floor = 0.50
+minimum_signed_agreement_floor = 0.50
+spearman_quantile = 0.05
+share_l1_quantile = 0.95
+agreement_quantile = 0.05
+share_l1_margin = 0.05
+minimum_preserved_phase_action_cells = 8
+total_phase_action_cells = 10
+
+[counterfactual]
+source_config = "f11_ppo_explanation_development_v2.toml"
+source_config_sha256 = "d1c449ef14aabf82a1d4cd275d8555f6ab1424d1119f844640f62002512f7a66"
+interventions = ["pedestrian_absent", "stop_absent", "lane_centered", "lane_low_confidence", "previous_action_neutral", "sham"]
+sham_absolute_tolerance = 0.0000001
+direction_deadband = 0.000005
+minimum_direction_agreement = 0.90
+maximum_normalized_mean_effect_drift = 0.10
+maximum_normalized_p95_effect_drift = 0.25
+maximum_normalized_absolute_value = 3.0
+
+[historical]
+selection_fidelity = "../artifacts/f12_belief_ppo_compression_v1/evaluation/selection_matrix_fidelity.json"
+selection_fidelity_sha256 = "6f50d65bf7f115bb97c7e6dcf4bb75b05aef7a1c497edce0433a16b843ff10a5"
+selection_behavior = "../artifacts/f12_belief_ppo_compression_v1/evaluation/selection_matrix_closed_loop.json"
+selection_behavior_sha256 = "1a7824b95675b76afbe5d655eac35e3974d2dc804cc9193e4a48d2dc04232ed3"
+benchmarks = "../artifacts/f12_belief_ppo_compression_v1/benchmarks/actor_benchmarks.json"
+benchmarks_sha256 = "00895134652179015393e8ea2c1db99c0563a8c3e472e3dc3fbd4ead2e0b7ffb"
+retention = "../artifacts/f12_belief_ppo_compression_v1/evaluation/retention.json"
+retention_sha256 = "14ab1b998b01b77c98c26707ae680dcb331f22988ac5cf7eea7c10567864b779"
+pruning_registry = "../artifacts/f12_belief_ppo_compression_v1/pruning/registry.json"
+pruning_fidelity = "../artifacts/f12_belief_ppo_compression_v1/evaluation/selection_pruning_fidelity.json"
+pruning_behavior = "../artifacts/f12_belief_ppo_compression_v1/evaluation/selection_pruning_closed_loop.json"
+
+[outputs]
+directory = "../artifacts/f14_explainability_aware_compression_v1"
+

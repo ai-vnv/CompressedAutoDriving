@@ -1,0 +1,160 @@
+schema_version = 1
+experiment = "F15 Cross-Curriculum Compression Failure Localization and Recovery v1"
+
+[frozen]
+policy_config = "f10_ppo_visual_objects_v30.toml"
+original_ppo_checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/ppo_selected.pt"
+original_ppo_sha256 = "02e898ce12d71f97016d50ed8a40574807e6d2fd995fc9f0dcd24f357f2c6250"
+f12_ablation_registry = "../artifacts/f12_belief_ppo_compression_v1/final/ablation_registry.json"
+f12_ablation_registry_sha256 = "4160df2cff9162ce89288aa3a405e6f2d8ecf0578e4aa9f365db71e4acdcb91b"
+f12_pruning_registry = "../artifacts/f12_belief_ppo_compression_v1/pruning/registry.json"
+f12_pruning_registry_sha256 = "5b1925e3ae73302b5371c7a05a1ea593b2b231eefa5167bd15fb5a87c9dcb910"
+f12_config = "f12_belief_ppo_compression_v1.toml"
+f12_config_sha256 = "890932fc8769df990bdd62c16b1759b3bb2a4cddda675331fd8cbcd387e40aca"
+observation_dimension = 29
+action_dimension = 2
+activation = "tanh"
+original_hidden_sizes = [256, 256]
+physical_action_ranges = [0.4, 8.0]
+curricula = ["c0", "c1", "c2", "c3", "c4"]
+
+[seeds]
+localization = [180001, 180002, 180003, 180004, 180005, 180006, 180007, 180008]
+recovery_dataset = [180101, 180102, 180103, 180104, 180105, 180106, 180107, 180108]
+recovery_selection = [180201, 180202, 180203, 180204, 180205, 180206, 180207, 180208]
+final_holdout = [180301, 180302, 180303, 180304, 180305, 180306, 180307, 180308]
+known_forbidden_f11 = [177101, 177102, 177103, 177104, 177105, 177106, 177107, 177108]
+known_forbidden_f12_development = [178001, 178002, 178003, 178004, 178005, 178006, 178007, 178008]
+known_forbidden_f12_selection = [178021, 178022, 178023, 178024, 178025, 178026, 178027, 178028]
+known_forbidden_f12_final = [178101, 178102, 178103, 178104, 178105, 178106, 178107, 178108]
+known_forbidden_f13_exploratory = [179001, 179002, 179003, 179004]
+known_forbidden_f13_confirmatory = [179101, 179102, 179103, 179104]
+
+[evaluation]
+paired_seeds_per_curriculum = 8
+same_seeds_for_all_models = true
+store_public_physical_29d = true
+store_public_normalized_29d = true
+store_privileged_evaluation_separately = true
+omega_sign_deadband_rad_s = 0.2
+visual_replay_is_descriptive_only = true
+failure_window_steps_before = 90
+failure_window_steps_after = 45
+representative_failure_rule = "lowest_seed_then_first_objective_failure_event"
+event_priority = ["collision", "unsafe", "stop_violation", "lane_failure", "invalid_pose", "timeout", "termination_without_completion"]
+
+[retention.absolute.c0]
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_invalid_pose_rate = 0.25
+maximum_mean_abs_lateral_error_m = 0.09
+minimum_mean_progress_m = 3.50
+
+[retention.absolute.c1]
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_invalid_pose_rate = 0.25
+maximum_small_loop_completion_drop = 0.25
+
+[retention.absolute.c2]
+maximum_collision_rate = 0.10
+maximum_unsafe_episode_rate = 0.50
+minimum_mean_progress_m = 4.50
+maximum_stationary_fraction = 0.65
+maximum_c1_completion_drop = 0.25
+
+[retention.absolute.c3]
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_restart_rate = 0.50
+maximum_c2_collision_rate_increase = 0.10
+
+[retention.absolute.c4]
+maximum_collision_rate = 0.10
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_mean_progress_m = 4.50
+maximum_unsafe_episode_rate = 0.50
+minimum_restart_rate = 0.50
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_stationary_fraction = 0.65
+
+[retention.relative_to_original]
+maximum_new_collisions = 0
+maximum_collision_rate_increase = 0.0
+maximum_unsafe_episode_rate_increase = 0.125
+maximum_stop_violation_rate_increase = 0.125
+maximum_lane_failure_rate_increase = 0.125
+maximum_invalid_pose_rate_increase = 0.125
+maximum_completion_rate_drop = 0.125
+maximum_restart_rate_drop = 0.125
+maximum_mean_progress_drop_m = 0.50
+maximum_minimum_clearance_drop_m = 0.05
+
+[fidelity]
+maximum_v_mae_mps = 0.020
+maximum_v_p95_abs_error_mps = 0.050
+maximum_omega_mae_rad_s = 0.200
+maximum_omega_p95_abs_error_rad_s = 0.500
+maximum_omega_sign_disagreement = 0.050
+minimum_pearson = 0.980
+minimum_spearman = 0.970
+
+[pruning]
+criterion = "layerwise_l2_incoming_plus_outgoing_plus_absolute_bias"
+tie_break = "lower_original_neuron_index"
+historical_widths = [192, 128, 96, 64]
+recovery_width_order = [64, 96, 128, 192]
+
+[distillation]
+teacher = "Original Policy"
+loss = "smooth_l1_normalized_physical_action"
+epochs = 80
+batch_size = 512
+learning_rate = 0.001
+weight_decay = 0.000001
+seed = 2026081601
+curriculum_balanced = true
+phase_balanced_within_curriculum = true
+copy_state_independent_log_std = true
+uses_ground_truth_action_labels = false
+uses_critic_target = false
+
+[quantization]
+backend = "x86"
+framework = "torch.ao.quantization_eager"
+weight_dtype = "qint8"
+activation_dtype = "quint8"
+weight_granularity = "per_channel_symmetric"
+activation_granularity = "per_tensor_affine"
+mode = "static"
+calibration_max_rows_per_curriculum_phase = 1024
+qat_epochs = 40
+qat_learning_rate = 0.0001
+qat_seed = 2026081602
+
+[recovery]
+first_candidate_width = 64
+minimum_width_rule = "smallest_width_passing_all_curricula_fidelity_and_safety"
+run_larger_width_only_if_64_fails = true
+run_qat_only_if_ptq_breaks_recovered_retention_or_fidelity = true
+run_progressive_pruning_only_if_direct_recovery_is_insufficient = true
+
+[final_holdout]
+once_only = true
+requires_frozen_failure_localization_decision = true
+requires_frozen_final_candidate = true
+models = ["Original Policy", "Final Recovered Optimized Policy"]
+replacement_after_access = false
+
+[benchmark]
+device = "cpu"
+batch_size = 1
+threads = 1
+warmup_iterations = 1000
+timed_iterations = 10000
+repeats = 5
+
+[artifacts]
+directory = "../artifacts/f15_cross_curriculum_recovery_v1"

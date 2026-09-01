@@ -1,0 +1,71 @@
+schema_version = 1
+extends = "f10_ppo_visual_v4_codex.toml"
+extends_sha256 = "1df027363f37f7149a785dcae98d4d2da2f4d2c39a31b161f8032d0b8ed184e1"
+experiment = "F10-PPO dynamic camera-lane C0-C1 remediation v8"
+
+[provenance]
+lane_belief_config = "lane_belief_v7_dynamic_rgb.toml"
+lane_belief_config_sha256 = "afc45d0e917af4da8de31b25c955ed2b4fb42c4a4d6869120f27e35d4e8423bf"
+formulation_doc = "../docs/F10_PPO_C0_C1_REMEDIATION_V8.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 83999],
+  [85000, 85999],
+  [92000, 93999],
+]
+
+[curriculum.c0]
+training_steps = 61440
+checkpoint_interval_steps = 10240
+training_seeds = [94001,94002,94003,94004,94005,94006,94007,94008,94009,94010,94011,94012]
+development_seeds = [94101,94102,94103,94104]
+stage_final_seeds = [94201,94202,94203,94204]
+
+[curriculum.c1]
+training_steps = 61440
+checkpoint_interval_steps = 10240
+training_seeds = [95001,95002,95003,95004,95005,95006,95007,95008,95009,95010,95011,95012]
+development_seeds = [95101,95102,95103,95104]
+stage_final_seeds = [95201,95202,95203,95204]
+
+[curriculum.c2]
+training_seeds = [96001,96002,96003,96004,96005,96006,96007,96008,96009,96010,96011,96012]
+development_seeds = [96101,96102,96103,96104]
+stage_final_seeds = [96201,96202,96203,96204]
+
+[curriculum.c3]
+training_seeds = [97001,97002,97003,97004,97005,97006,97007,97008,97009,97010,97011,97012]
+development_seeds = [97101,97102,97103,97104]
+stage_final_seeds = [97201,97202,97203,97204]
+
+[curriculum.c4]
+training_seeds = [98001,98002,98003,98004,98005,98006,98007,98008,98009,98010,98011,98012]
+development_seeds = [98101,98102,98103,98104]
+stage_final_seeds = [98201,98202,98203,98204]
+
+[global_final]
+small_loop = [99001,99002,99003,99004]
+experiment_loop = [99101,99102,99103,99104]
+pedestrian = [99201,99202,99203,99204]
+stop = [99301,99302,99303,99304]
+combined = [99401,99402,99403,99404]
+
+[wandb]
+group = "f10-ppo-visual-v8-dynamic-camera-lane"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_v8"
+
+[protocol_scope]
+maximum_stage = "c1"
+
+[v8_remediation]
+camera_lane_model = "mobilenet_v3_small_lane_pose_v1"
+camera_lane_checkpoint_sha256 = "637d517fe443134b45195e8ed91d2e900c40502f01fcde7e86847220263dc0a5"
+dynamic_longitudinal_supervision = true
+retrain_c0_from_random_initialization = true
+experiment_loop_wide_starts = true
+ppo_hyperparameters_changed = false
+reward_changed = false
+action_changed = false

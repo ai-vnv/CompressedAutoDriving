@@ -1,0 +1,70 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v30_source.toml"
+extends_sha256 = "47c533d229436e8cd5ffe096a9b022cd7d9dc2d79b6dbfea36d305e1a02b0d63"
+experiment = "F10-PPO C4 existence-gated belief v30"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V30_FORMULATION.md"
+
+[behavior_warm_start.c4]
+enabled = true
+dagger = true
+cumulative_policy_rehearsal = true
+privileged_teacher_guidance = true
+teacher_uses_privileged_truth = true
+precomputed_existence_gated_distillation = true
+precomputed_checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/behavior/ppo_existence_gated_step0.pt"
+precomputed_checkpoint_sha256 = "613fa6f53a81d3a9779428fb5f2f0ac7e7e3a457abcae4553e1b49283eb6bf1b"
+precomputed_manifest = "../artifacts/f10_ppo_visual_objects_v30/c4/behavior/existence_gated_distillation_manifest.json"
+precomputed_manifest_sha256 = "5b25ec378c870ea3f1fcd4e4372d28d08d47ee4f9f5327cb0d643d5a6a8a53d5"
+conditional_dataset = "../artifacts/f10_ppo_visual_objects_v28/behavior/belief_gated_rehearsal.npz"
+conditional_dataset_sha256 = "d68f087c8ba94a4fa7c6afe26d0eafae55caaa321b2e02e3198076dc7e8a7401"
+conditional_dataset_manifest = "../artifacts/f10_ppo_visual_objects_v28/behavior/belief_gated_rehearsal_manifest.json"
+conditional_dataset_manifest_sha256 = "52e7b37fad7a6addafe442a2fc1019e62cbe16dc16d349cf236c946789faee64"
+dataset = "../artifacts/f10_ppo_visual_objects_v24/c4/behavior/behavior_warm_start.npz"
+dataset_sha256 = "bb9c43ef409b8c1e3c33a50fbfbbd4cbfd0ed0e8e5f18bcd8cd5933b88f96a63"
+manifest = "../artifacts/f10_ppo_visual_objects_v24/c4/behavior/behavior_warm_start_manifest.json"
+manifest_sha256 = "0460559ef673beec836052cfbe909c2ac33ad63e2a306be4570bccf5aa80f79d"
+source_csv = "../artifacts/f10_ppo_visual_objects_v24/c4/behavior/behavior_warm_start_source.csv"
+source_csv_sha256 = "7f3fdde4934208cb5155c7333015d9f6b3fabbaad3f757fdbb378c6764174aaa"
+source_protocol = "f10_ppo_visual_objects_v24_source.toml"
+source_protocol_sha256 = "058f4e22606958add9fa9d70598b29492ca434af45b4e66862087cd943cb4173"
+source_checkpoint_sha256 = "ef30983c4599b7654ec8a506849ae9fe60c9d71b0cc7e3b2bda2f61182f4918a"
+learner_checkpoint = "../artifacts/f10_ppo_visual_objects_v22/c4/ppo_selected.pt"
+learner_checkpoint_sha256 = "de45941a9fafd3bcc5f33f43d333d4814a8844c3f97f1ac29ddca27961b9fab8"
+
+[behavior_warm_start.c4.gate]
+maximum_c2_collision_rate = 0.10
+maximum_c2_unsafe_episode_rate = 0.10
+minimum_c2_mean_progress_m = 4.50
+maximum_c2_invalid_pose_rate = 0.10
+minimum_c3_stop_completion_rate = 0.50
+maximum_c3_stop_violation_rate = 0.25
+minimum_c3_restart_rate = 0.50
+maximum_c3_collision_rate = 0.10
+minimum_completion_rate = 0.50
+minimum_mean_progress_m = 4.50
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_restart_rate = 0.50
+maximum_collision_rate = 0.10
+maximum_unsafe_episode_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_stationary_fraction = 0.65
+
+[ppo_stage_overrides.c4]
+learning_rate = 0.0000002
+n_epochs = 1
+clip_range = 0.01
+entropy_coefficient = 0.0
+max_gradient_norm = 0.02
+target_kl = 0.002
+
+[checkpoint_selection.minimum_updated_global_step]
+c4 = 1024
+
+[wandb]
+group = "f10-ppo-visual-objects-v30-c4-existence-gated"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v30"

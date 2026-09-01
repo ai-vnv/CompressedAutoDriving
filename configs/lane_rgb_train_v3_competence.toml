@@ -1,0 +1,42 @@
+schema_version = 1
+experiment = "camera-only lane pose competence MobileNetV3-small v3"
+dataset = "../datasets/lane_rgb_combined_v9"
+output = "../artifacts/f10_ppo_visual_v9/lane_rgb_model"
+
+[model]
+architecture = "mobilenet_v3_small_lane_pose_v1"
+initial_checkpoint = "/home/pannntastic/aivnv/duckie-pomdp/artifacts/f10_ppo_visual_v8/lane_rgb_model/best.pt"
+initial_checkpoint_sha256 = "637d517fe443134b45195e8ed91d2e900c40502f01fcde7e86847220263dc0a5"
+image_size_px = 224
+crop_top_fraction = 0.25
+target_scales = [0.12, 0.70, 15.0]
+
+[training]
+seed = 8129
+epochs = 25
+batch_size = 32
+learning_rate = 0.00005
+weight_decay = 0.0001
+smooth_l1_beta = 0.20
+device = "cuda"
+# A horizontal flip swaps Duckietown's yellow centreline and white outer
+# boundary, so it is not a physically valid lane augmentation.
+horizontal_flip_probability = 0.0
+brightness_jitter = 0.15
+contrast_jitter = 0.15
+saturation_jitter = 0.10
+
+[selection]
+maximum_lateral_rmse_m = 0.035
+maximum_heading_rmse_rad = 0.140
+minimum_heading_sign_accuracy = 0.90
+maximum_curvature_rmse_inv_m = 3.0
+score_lateral_scale_m = 0.035
+score_heading_scale_rad = 0.140
+score_curvature_scale_inv_m = 3.0
+score_curvature_weight = 0.25
+
+[selection.strata]
+maximum_right_turn_heading_rmse_rad = 0.140
+maximum_edge_lateral_rmse_m = 0.030
+edge_minimum_absolute_lateral_m = 0.075

@@ -1,0 +1,28 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v24_source.toml"
+extends_sha256 = "058f4e22606958add9fa9d70598b29492ca434af45b4e66862087cd943cb4173"
+experiment = "F10-PPO C4 retained combined-policy source v25"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V25_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 157999],
+  [161000, 161999],
+  [164000, 167999],
+  [169000, 172999],
+]
+
+[curriculum.c4]
+training_steps = 4096
+checkpoint_interval_steps = 1024
+training_seeds = [173001,173002,173003,173004,173005,173006,173007,173008,173009,173010,173011,173012]
+development_seeds = [173101,173102,173103,173104]
+stage_final_seeds = [173201,173202,173203,173204]
+
+[wandb]
+group = "f10-ppo-visual-objects-v25-c4-retained-guidance"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v25"

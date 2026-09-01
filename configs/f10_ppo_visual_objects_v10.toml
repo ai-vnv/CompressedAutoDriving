@@ -1,0 +1,107 @@
+schema_version = 1
+extends = "f10_ppo_visual_v9.toml"
+extends_sha256 = "7743d6468a8598c8bed8b76dff00f25a2ed40d3d46476dd3bbbd0c582e5c4280"
+experiment = "F10-PPO experiment_loop separated-object curriculum v10"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V10_FORMULATION.md"
+
+[curriculum_import.c1]
+source_protocol = "f10_ppo_visual_v9.toml"
+source_protocol_sha256 = "7743d6468a8598c8bed8b76dff00f25a2ed40d3d46476dd3bbbd0c582e5c4280"
+artifact_root = "../artifacts/f10_ppo_visual_v9"
+selected_checkpoint = "../artifacts/f10_ppo_visual_v9/c1/ppo_selected.pt"
+selected_checkpoint_sha256 = "0e26ac28d8806140ff9544ecb094c20e850f66f83972544eb0dd8ac9b4d131b2"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 106999],
+]
+
+[object_start]
+longitudinal_jitter_m = [-0.025, 0.025]
+lateral_jitter_m = [-0.018, 0.018]
+heading_jitter_rad = [-0.035, 0.035]
+
+[curriculum.c0]
+training_seeds = [128001,128002,128003,128004,128005,128006,128007,128008,128009,128010,128011,128012]
+development_seeds = [128101,128102,128103,128104]
+stage_final_seeds = [128201,128202,128203,128204]
+
+[curriculum.c1]
+training_seeds = [129001,129002,129003,129004,129005,129006,129007,129008,129009,129010,129011,129012]
+development_seeds = [129101,129102,129103,129104]
+stage_final_seeds = [129201,129202,129203,129204]
+
+[curriculum.c2]
+name = "experiment_loop_duckie_crossing"
+map = "experiment_loop"
+scenario_config = "scenario_experiment_loop_duckie_v1.toml"
+pedestrian_active = true
+stop_active = false
+domain_randomization = false
+pedestrian_modes = ["cross_left_to_right", "cross_right_to_left"]
+episode_horizon_steps = 2700
+training_steps = 40960
+checkpoint_interval_steps = 10240
+training_seeds = [130001,130002,130003,130004,130005,130006,130007,130008,130009,130010,130011,130012]
+development_seeds = [130101,130102,130103,130104]
+stage_final_seeds = [130201,130202,130203,130204]
+
+[curriculum.c3]
+name = "experiment_loop_stop_only"
+map = "experiment_loop"
+scenario_config = "scenario_experiment_loop_stop_v1.toml"
+pedestrian_active = false
+stop_active = true
+domain_randomization = false
+pedestrian_modes = ["stationary"]
+episode_horizon_steps = 2700
+training_steps = 40960
+checkpoint_interval_steps = 10240
+training_seeds = [131001,131002,131003,131004,131005,131006,131007,131008,131009,131010,131011,131012]
+development_seeds = [131101,131102,131103,131104]
+stage_final_seeds = [131201,131202,131203,131204]
+
+[curriculum.c4]
+training_seeds = [133001,133002,133003,133004,133005,133006,133007,133008,133009,133010,133011,133012]
+development_seeds = [133101,133102,133103,133104]
+stage_final_seeds = [133201,133202,133203,133204]
+
+[global_final]
+small_loop = [132301,132302,132303,132304]
+experiment_loop = [132401,132402,132403,132404]
+pedestrian = [132001,132002,132003,132004]
+stop = [132101,132102,132103,132104]
+combined = [132201,132202,132203,132204]
+
+[acceptance.c2]
+maximum_collision_rate = 0.10
+maximum_unsafe_episode_rate = 0.50
+minimum_mean_progress_m = 4.50
+maximum_stationary_fraction = 0.65
+maximum_c1_completion_drop = 0.25
+
+[acceptance.c3]
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_restart_rate = 0.50
+maximum_c2_collision_rate_increase = 0.10
+
+[wandb]
+group = "f10-ppo-visual-objects-v10-experiment-loop"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v10"
+
+[protocol_scope]
+maximum_stage = "c3"
+
+[object_curriculum]
+map = "experiment_loop"
+counter_clockwise = true
+objects_separated = true
+duckie_path_must_intersect_ego_route = true
+c2_stop_sign_visible = false
+c3_pedestrian_visible = false
+c4_not_authorized = true

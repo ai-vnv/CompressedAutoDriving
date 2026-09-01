@@ -1,0 +1,83 @@
+schema_version = 1
+experiment = "F11 final Belief-PPO explanation visualization"
+method_quantitative = "phase-conditioned distributional multi-reference Integrated Gradients"
+method_qualitative = "BEV Belief-Action Decision Trace"
+
+[frozen_policy]
+config = "f10_ppo_visual_objects_v30.toml"
+config_sha256 = "85e2cbd321e2db53de270e3c0b885a723137d17e94af3640ed5a8a9f917fe829"
+checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/ppo_selected.pt"
+checkpoint_sha256 = "02e898ce12d71f97016d50ed8a40574807e6d2fd995fc9f0dcd24f357f2c6250"
+stage = "c4"
+observation_dimension = 29
+
+[r004]
+directory = "../artifacts/f11_ppo_explanation_v2/r004"
+metrics = "final_attribution_metrics.json"
+metrics_sha256 = "dffb8b316ec14aab8f3e0fbad3e07fa82eed756884215f8beeaa3b2aa6fac869"
+group_rows = "final_group_attribution.csv"
+group_rows_sha256 = "7af5bf402bb56e0c1c1f5b4c7bba9494dc239e192d06c380c7410d588fef102e"
+group_summary = "final_group_summary.csv"
+group_summary_sha256 = "fd8933c37dc18ffe00000bbb1f65805be7c13f8b1e76a04719248c1c8a8ff1b0"
+mean_attribution = "final_mean_attribution.npz"
+mean_attribution_sha256 = "e7dfb24485862285c6690ffbaaf55f60c395b3a58dfc6113b66bafcc3bbaea4d"
+draw_attribution = "distributional_integrated_gradients.npz"
+draw_attribution_sha256 = "d31760a10064788c04d022331115a287ca5285e753664d9215e0e540b8ea0a33"
+public_trace = "locked_public_trace.npz"
+public_trace_sha256 = "a125ffa0c26908380b83270752140e2daf006fe73f5dac4191321a570c3881d6"
+trace_manifest = "locked_trace_manifest.json"
+trace_manifest_sha256 = "bff0fc6b31909eee1d99d206129ba121d854ec6a73df1920c015e139c2974af2"
+effective_reference_count = 24
+locked_seeds = [177101, 177102, 177103, 177104, 177105, 177106, 177107, 177108]
+rerender_locked_seeds = false
+
+[qualitative_source]
+seed = 176001
+seed_role = "qualitative_example_only"
+public_trace = "../artifacts/f11_ppo_integrated_gradients_v1/policy_trajectory.npz"
+public_trace_sha256 = "a6b3650b90d1b2dcf952d66fed5facd128c803a72780a6e767df23a340c0e204"
+evaluation_pose = "../artifacts/f11_ppo_integrated_gradients_v1/bev/evaluation_only_pose_trace.npz"
+evaluation_pose_sha256 = "9cf55daf464a6da310b5b61a5432b2625cc3711e19e7e27dd75b1c0e2116f2fb"
+pose_enters_policy_or_attribution = false
+replay_only_for_selected_rgb = true
+maximum_observation_replay_error = 1.0e-6
+maximum_action_replay_error = 1.0e-6
+
+[route_geometry]
+scenario = "scenario_experiment_loop_combined_v1.toml"
+scenario_sha256 = "2377396c796e323d47fc359efdb0d2cf762a388935fb5a2d58291d78802ed321"
+map = "../maps/experiment_loop_stop_v2.yaml"
+map_sha256 = "abf8d24c14196e1429d5c16a51196c9e569546a6dbf5032438f18f4be953d77b"
+
+[phases]
+pedestrian_existence_threshold = 0.4
+pedestrian_relevant_max_range_m = 1.2
+lane_curve_min_abs_curvature_inv_m = 1.5
+stop_satisfied_vicinity_m = 0.5
+order = ["nominal", "lane_curve", "pedestrian_relevant", "stop_required", "stop_satisfied"]
+
+[selection]
+general_rule = "temporal_midpoint_of_longest_continuous_public_phase_segment"
+pedestrian_rule = "nearest_median_valid_range_in_longest_segment_with_existence_at_least_0.9"
+pedestrian_min_existence = 0.9
+uses_public_29d_only = true
+uses_attribution = false
+uses_rgb_content = false
+uses_world_pose = false
+
+[plot]
+png_dpi = 300
+font_family = "DejaVu Sans"
+overall_figure_size = [9.0, 5.0]
+heatmap_figure_size = [9.0, 4.8]
+trace_figure_size = [13.0, 9.0]
+panel_figure_size = [14.0, 10.5]
+
+[r006_audit]
+report = "../docs/F11_R006_REPORT_FOR_REVIEW.md"
+report_sha256 = "1283b212680411288a78477369621b9d20d665f498a4aec34eab46635a95aa57"
+status = "FAILED_at_replay_integrity_before_any_intervention"
+
+[output]
+directory = "../artifacts/f11_ppo_explanation_v2/final_visualization"
+summary = "../docs/F11_FINAL_EXPLANATION_SUMMARY.md"

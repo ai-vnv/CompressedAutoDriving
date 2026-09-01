@@ -1,0 +1,108 @@
+schema_version = 1
+experiment = "F13 explain compressed Belief-PPO v1"
+
+[frozen.original]
+checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/ppo_selected.pt"
+sha256 = "02e898ce12d71f97016d50ed8a40574807e6d2fd995fc9f0dcd24f357f2c6250"
+architecture = [29, 256, 256, 2]
+precision = "FP32"
+
+[frozen.a7]
+checkpoint = "../artifacts/f12_belief_ppo_compression_v1/prune_distill_quant_distill/actor_int8.pt"
+sha256 = "f8e4e3ae5c43028d7b5d08e64c31d20dcce28153fb102ffac53a3b1c7b7cbc7e"
+architecture = [29, 64, 64, 2]
+precision = "INT8"
+variant = "A7"
+
+[frozen.contract]
+policy_config = "f10_ppo_visual_objects_v30.toml"
+policy_config_sha256 = "85e2cbd321e2db53de270e3c0b885a723137d17e94af3640ed5a8a9f917fe829"
+f12_config = "f12_belief_ppo_compression_v1.toml"
+f12_config_sha256 = "890932fc8769df990bdd62c16b1759b3bb2a4cddda675331fd8cbcd387e40aca"
+observation_dimension = 29
+action_dimension = 2
+maximum_linear_velocity_mps = 0.4
+maximum_angular_velocity_rad_s = 4.0
+omega_deadband_rad_s = 0.2
+
+[frozen.f11]
+r004_trace = "../artifacts/f11_ppo_explanation_v2/r004/locked_public_trace.npz"
+r004_trace_sha256 = "a125ffa0c26908380b83270752140e2daf006fe73f5dac4191321a570c3881d6"
+r004_final_mean_attribution = "../artifacts/f11_ppo_explanation_v2/r004/final_mean_attribution.npz"
+r004_final_mean_attribution_sha256 = "e7dfb24485862285c6690ffbaaf55f60c395b3a58dfc6113b66bafcc3bbaea4d"
+r004_reference_draws = "../artifacts/f11_ppo_explanation_v2/r004/reference_draws.npz"
+r004_reference_draws_sha256 = "ab3d0bc112dbcc21d4a909b8586eafbe3cca9c4eefb1cac6a2e6de4545e1b16f"
+r004_group_summary = "../artifacts/f11_ppo_explanation_v2/r004/final_group_summary.csv"
+r004_group_summary_sha256 = "fd8933c37dc18ffe00000bbb1f65805be7c13f8b1e76a04719248c1c8a8ff1b0"
+r003_validation = "../artifacts/f11_ppo_explanation_v2/r003/intervention_validation.json"
+r003_validation_sha256 = "ebc2e3847cda35bfa77dcfd33a90b3ddf603b6aea7d94e892424869b08cf4991"
+r003_config = "f11_ppo_explanation_development_v2.toml"
+r003_config_sha256 = "d1c449ef14aabf82a1d4cd275d8555f6ab1424d1119f844640f62002512f7a66"
+development_trace = "../artifacts/f11_ppo_explanation_v2/r002/development_trace.npz"
+development_trace_sha256 = "1fa0f8bb554aa4ce22f0820dd5afa644ec298c8a5ef0d259edd20e1de0b9f34f"
+
+[surrogate]
+required_kind = "exact pre-conversion fake-quantized QAT state from the A7 run"
+search_roots = ["../artifacts/f12_belief_ppo_compression_v1"]
+minimum_rows_per_phase = 100
+maximum_v_mae_mps = 0.002
+maximum_v_p99_abs_error_mps = 0.010
+maximum_v_abs_error_mps = 0.050
+maximum_omega_mae_rad_s = 0.030
+maximum_omega_p99_abs_error_rad_s = 0.100
+maximum_omega_abs_error_rad_s = 0.500
+minimum_pearson = 0.999
+minimum_spearman = 0.995
+minimum_saturation_agreement = 0.995
+minimum_omega_sign_agreement = 0.995
+
+[replay]
+calibration_source = "F11 development public trace only"
+original_tolerance_formula = "max(5e-6, 2 * development_max_abs_replay_error)"
+a7_tolerance_formula = "max(1e-7, 2 * development_max_abs_repeat_error)"
+original_minimum_tolerance = 0.000005
+a7_minimum_tolerance = 0.0000001
+sham_multiplier = 1.0
+
+[attribution]
+method = "phase-conditioned distributional multi-reference Integrated Gradients"
+groups = ["Lane", "Ego", "StopLine", "Pedestrian", "Stop", "PreviousAction"]
+phases = ["nominal", "lane_curve", "pedestrian_relevant", "stop_required", "stop_satisfied"]
+outputs = ["v_cmd_mps", "omega_cmd_rad_s"]
+minimum_group_spearman = 0.70
+maximum_group_share_l1 = 0.40
+minimum_top_group_preservation_fraction = 0.80
+minimum_top_two_jaccard = 0.50
+minimum_structurally_preserved_cells = 8
+total_phase_action_cells = 10
+
+[counterfactual]
+interventions = ["pedestrian_absent", "stop_absent", "lane_centered", "lane_low_confidence", "previous_action_neutral", "sham"]
+primary_phases = ["pedestrian_relevant", "stop_required", "lane_curve", "nominal"]
+minimum_direction_agreement = 0.90
+maximum_normalized_mean_effect_drift = 0.10
+maximum_normalized_p95_effect_drift = 0.25
+# Frozen PPO observation clip; this is not the [-1, 1] action bound.
+maximum_normalized_absolute_value = 3.0
+
+[stress]
+stage = "c4"
+exploratory_seeds = [179001, 179002, 179003, 179004]
+confirmatory_seeds = [179101, 179102, 179103, 179104]
+episode_horizon_steps = 2200
+sentinels = ["pedestrian_action_saturation", "post_stop_action_ordering"]
+action_saturation_threshold = 0.98
+trigger_saturation_rate_increase = 0.05
+trigger_mean_v_action_drift_mps = 0.04
+trigger_mean_omega_action_drift_rad_s = 0.80
+minimum_confirmatory_repetitions = 2
+pairwise_same_seed_required = true
+scenario_parameter_search_permitted = false
+
+[classification]
+behavioral_new_failure_minimum_count = 2
+semantic_preservation_requires_valid_attribution = true
+overall_pass_requires_behavior_preserved = true
+
+[artifacts]
+directory = "../artifacts/f13_explain_compressed_v1"

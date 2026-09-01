@@ -1,0 +1,73 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v22_source.toml"
+extends_sha256 = "adc1af11d72863c805f03e84517399dce0d0463c9db5bd3e797b535b6fcf039a"
+experiment = "F10-PPO C4 cumulative public-belief DAgger v22"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V22_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 157999],
+  [161000, 161999],
+  [164000, 167999],
+  [169000, 169999],
+]
+
+[curriculum.c4]
+training_steps = 4096
+checkpoint_interval_steps = 1024
+training_seeds = [170001,170002,170003,170004,170005,170006,170007,170008,170009,170010,170011,170012]
+development_seeds = [170101,170102,170103,170104]
+stage_final_seeds = [170201,170202,170203,170204]
+
+[behavior_warm_start.c4]
+enabled = true
+dagger = true
+balanced_cumulative_retention = true
+anchor_weight_multiplier = 3.0
+dataset = "../artifacts/f10_ppo_visual_objects_v22/c4/behavior/behavior_warm_start.npz"
+dataset_sha256 = "00212b93de47918d63a9b593b8164aa7d194ea30a2b351be35ac664e892d4aa3"
+manifest = "../artifacts/f10_ppo_visual_objects_v22/c4/behavior/behavior_warm_start_manifest.json"
+manifest_sha256 = "d3eb583b8b9ce228fd6ae5b557d6ee4acd33b685205d692ed837a29929dd5338"
+source_csv = "../artifacts/f10_ppo_visual_objects_v22/c4/behavior/behavior_warm_start_source.csv"
+source_csv_sha256 = "2afea88e67aea27863624986232ef552e7cc8528d82d7e7c5e9ebc84c7a02435"
+source_protocol = "f10_ppo_visual_objects_v22_source.toml"
+source_protocol_sha256 = "adc1af11d72863c805f03e84517399dce0d0463c9db5bd3e797b535b6fcf039a"
+source_checkpoint_sha256 = "ef30983c4599b7654ec8a506849ae9fe60c9d71b0cc7e3b2bda2f61182f4918a"
+learner_checkpoint = "../artifacts/f10_ppo_visual_objects_v21/c4/ppo_selected.pt"
+learner_checkpoint_sha256 = "828c31b40ce328f284da03178d54fe6847999671f3198bc0a514e199cbb0d430"
+anchor_dataset_sha256 = "f242b37431c18a02d96102f944adba9227d4a2a8f5c29eb823173b7a672f9c5a"
+epochs = 40
+batch_size = 512
+learning_rate = 0.001
+seed = 71000
+
+[behavior_warm_start.c4.gate]
+minimum_c3_stop_completion_rate = 0.50
+maximum_c3_stop_violation_rate = 0.25
+minimum_c3_restart_rate = 0.50
+maximum_c3_collision_rate = 0.10
+minimum_completion_rate = 0.50
+minimum_mean_progress_m = 4.50
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_restart_rate = 0.50
+maximum_collision_rate = 0.10
+maximum_unsafe_episode_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_stationary_fraction = 0.65
+
+[ppo_stage_overrides.c4]
+learning_rate = 0.000002
+n_epochs = 1
+clip_range = 0.02
+entropy_coefficient = 0.0
+max_gradient_norm = 0.05
+target_kl = 0.005
+
+[wandb]
+group = "f10-ppo-visual-objects-v22-c4-dagger"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v22"

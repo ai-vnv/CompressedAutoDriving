@@ -1,0 +1,70 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v10.toml"
+extends_sha256 = "46f82939c2ede8e73dd91bc53531da581aff13e21da648669263d03750a3ceb8"
+experiment = "F10-PPO experiment_loop separated-object safety curriculum v11"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V11_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 133999],
+]
+
+[curriculum.c0]
+training_seeds = [134001,134002,134003,134004,134005,134006,134007,134008,134009,134010,134011,134012]
+development_seeds = [134101,134102,134103,134104]
+stage_final_seeds = [134201,134202,134203,134204]
+
+[curriculum.c1]
+training_seeds = [135001,135002,135003,135004,135005,135006,135007,135008,135009,135010,135011,135012]
+development_seeds = [135101,135102,135103,135104]
+stage_final_seeds = [135201,135202,135203,135204]
+
+[curriculum.c2]
+training_steps = 61440
+checkpoint_interval_steps = 10240
+training_seeds = [136001,136002,136003,136004,136005,136006,136007,136008,136009,136010,136011,136012]
+development_seeds = [136101,136102,136103,136104]
+stage_final_seeds = [136201,136202,136203,136204]
+
+[curriculum.c3]
+training_steps = 40960
+checkpoint_interval_steps = 10240
+training_seeds = [137001,137002,137003,137004,137005,137006,137007,137008,137009,137010,137011,137012]
+development_seeds = [137101,137102,137103,137104]
+stage_final_seeds = [137201,137202,137203,137204]
+
+[curriculum.c4]
+training_seeds = [138001,138002,138003,138004,138005,138006,138007,138008,138009,138010,138011,138012]
+development_seeds = [138101,138102,138103,138104]
+stage_final_seeds = [138201,138202,138203,138204]
+
+[global_final]
+small_loop = [139001,139002,139003,139004]
+experiment_loop = [139101,139102,139103,139104]
+pedestrian = [139201,139202,139203,139204]
+stop = [139301,139302,139303,139304]
+combined = [139401,139402,139403,139404]
+
+[pedestrian_training_curriculum]
+# Training only. Development and final evaluation always use the scenario's
+# full 0.20 m/s crossing speed.
+speeds_mps = [0.12, 0.16, 0.20]
+phase_end_episodes = [24, 48]
+
+[reward]
+# Earlier dense warning compensates for measured YOLO/EKF lag without changing
+# the policy observation, detector, belief updater, or safety acceptance gate.
+pedestrian_safety_distance_m = 0.65
+pedestrian_proximity_weight = -0.12
+pedestrian_stationary_proximity_factor = 0.0
+pedestrian_collision_terminal_penalty = -12.0
+lane_failure_penalty = -12.0
+invalid_pose_penalty = -12.0
+
+[wandb]
+group = "f10-ppo-visual-objects-v11-experiment-loop"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v11"

@@ -1,0 +1,97 @@
+schema_version = 1
+experiment = "F11 PPO Integrated Gradients v1"
+method = "integrated_gradients"
+
+[frozen_policy]
+stage = "c4"
+config = "f10_ppo_visual_objects_v30.toml"
+config_sha256 = "85e2cbd321e2db53de270e3c0b885a723137d17e94af3640ed5a8a9f917fe829"
+checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/ppo_selected.pt"
+checkpoint_sha256 = "02e898ce12d71f97016d50ed8a40574807e6d2fd995fc9f0dcd24f357f2c6250"
+observation_dimension = 29
+maximum_linear_velocity_mps = 0.4
+maximum_angular_velocity_rad_s = 4.0
+
+[data]
+stage = "c4"
+seeds = [176001, 176002, 176003, 176004]
+seed_role = "explanation_only"
+qualitative_seed = 176001
+sample_stride = 4
+maximum_episode_steps = 4200
+store_privileged_truth = false
+
+[integrated_gradients]
+targets = ["v_cmd_mps", "omega_cmd_rad_s", "critic_value"]
+path_steps = 128
+sample_batch_size = 128
+baseline = "per_episode_reset_public_observation"
+completeness_median_absolute_tolerance = 0.0001
+completeness_p99_absolute_tolerance = 0.001
+
+[faithfulness]
+targets = ["v_cmd_mps", "omega_cmd_rad_s"]
+replacement = "episode_reset_baseline"
+fractions = [0.10, 0.20, 0.40, 0.60, 0.80, 1.00]
+random_repetitions = 16
+random_seed = 176999
+
+[stability]
+metric = "adjacent_frame_spearman_abs_attribution"
+
+[feature_groups]
+lane_belief = [
+  "lane_validity_probability",
+  "lane_lateral_error_mean_m",
+  "lane_lateral_error_std_m",
+  "lane_heading_error_mean_rad",
+  "lane_heading_error_std_rad",
+]
+ego_motion = [
+  "actual_linear_velocity_mps",
+  "actual_yaw_rate_rad_s",
+]
+road = [
+  "lane_curvature_mean_inv_m",
+  "lane_curvature_std_inv_m",
+  "stop_line_distance_m",
+]
+pedestrian_belief = [
+  "pedestrian_existence_probability",
+  "pedestrian_range_mean_m",
+  "pedestrian_range_std_m",
+  "pedestrian_bearing_mean_rad",
+  "pedestrian_bearing_std_rad",
+  "pedestrian_radial_velocity_mean_mps",
+  "pedestrian_radial_velocity_std_mps",
+  "pedestrian_bearing_rate_mean_rad_s",
+  "pedestrian_bearing_rate_std_rad_s",
+]
+stop_belief = [
+  "stop_sign_existence_probability",
+  "stop_sign_range_mean_m",
+  "stop_sign_range_std_m",
+  "stop_sign_bearing_mean_rad",
+  "stop_sign_bearing_std_rad",
+  "stop_mode_none",
+  "stop_mode_required",
+  "stop_mode_satisfied",
+]
+previous_action = [
+  "previous_linear_velocity_cmd_mps",
+  "previous_angular_velocity_cmd_rad_s",
+]
+
+[recorded_second_idea]
+method = "semantic_counterfactual_belief_ablation"
+status = "recorded_not_executed"
+future_interventions = [
+  "neutralize_pedestrian_belief",
+  "neutralize_stop_belief",
+  "increase_belief_uncertainty",
+  "neutralize_lane_belief",
+]
+
+[artifacts]
+directory = "../artifacts/f11_ppo_integrated_gradients_v1"
+

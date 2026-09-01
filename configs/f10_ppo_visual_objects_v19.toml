@@ -1,0 +1,34 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v18.toml"
+extends_sha256 = "9f496811aa116b426b5a7558049316e9f18d59d86a6abb738769ee72eedaa8b1"
+experiment = "F10-PPO C3 low-variance on-policy remediation v19"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V19_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 157999],
+  [161000, 161999],
+  [164000, 166999],
+]
+
+[curriculum.c3]
+training_steps = 8192
+checkpoint_interval_steps = 1024
+training_seeds = [167001,167002,167003,167004,167005,167006,167007,167008,167009,167010,167011,167012]
+development_seeds = [167101,167102,167103,167104]
+stage_final_seeds = [167201,167202,167203,167204]
+
+[curriculum_transition.c3]
+reset_optimizer = true
+reset_log_std = -3.0
+
+[checkpoint_selection.minimum_updated_global_step]
+c3 = 1024
+
+[wandb]
+group = "f10-ppo-visual-objects-v19-c3-on-policy"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v19"

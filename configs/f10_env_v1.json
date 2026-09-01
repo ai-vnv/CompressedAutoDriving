@@ -1,0 +1,46 @@
+{
+  "name": "duckie-pomdp-f10-sac-v1",
+  "purpose": "F10 local SAC training with frozen YOLO/F9c perception and online W&B telemetry",
+  "base_environment": {
+    "virtualenv": "/home/pannntastic/aivnv/duckie/.venv",
+    "python": "3.10.20",
+    "source_overlay": "/home/pannntastic/aivnv/duckie/src",
+    "gym_duckietown": "6.2.0"
+  },
+  "hardware": {
+    "accelerator": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "vram_mib": 8188,
+    "cuda_required": true
+  },
+  "locked_packages": {
+    "numpy": "1.26.4",
+    "torch": "2.12.1+cu130",
+    "ultralytics": "8.4.116",
+    "wandb": "0.28.1",
+    "gym": "0.26.2"
+  },
+  "install_phases": [
+    {
+      "reason": "Warm-reuse the validated F8/F9 CUDA and YOLO stack; no package operation",
+      "command": "python -c \"import torch, ultralytics; print(torch.__version__, ultralytics.__version__)\""
+    },
+    {
+      "reason": "Pin experiment telemetry without changing Torch or simulator dependencies",
+      "command": "python -m pip install wandb==0.28.1"
+    }
+  ],
+  "weights": {
+    "yolo_checkpoint": "artifacts/yolo_v1/best.pt",
+    "yolo_sha256": "3d4f816d440690493b856d25403a84a3249e4250599319c32569b97cb8d7482c"
+  },
+  "environment": {
+    "PYTHONPATH": "/home/pannntastic/aivnv/duckie-pomdp/src:/home/pannntastic/aivnv/duckie/src",
+    "DUCKIETOWN_HEADLESS": "1"
+  },
+  "validation": {
+    "import_smoke": "python -c \"import gym, numpy, torch, ultralytics, wandb; print(numpy.__version__, torch.__version__, ultralytics.__version__, wandb.__version__)\"",
+    "cuda_witness": "python -c \"import torch; torch.manual_seed(10000); x=torch.randn(8,8,device='cuda'); print('F10_WITNESS', tuple((x@x).shape), float((x@x).sum()), torch.cuda.get_device_name())\"",
+    "pretraining_gate": "python scripts/verify_f10_pretraining.py",
+    "regression_suite": "python -m pytest tests -q --disable-warnings"
+  }
+}

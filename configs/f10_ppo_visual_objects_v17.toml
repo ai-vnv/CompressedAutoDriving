@@ -1,0 +1,42 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v16.toml"
+extends_sha256 = "f2d980cf6f7c8181c3cda10c38122a21efc03b19500efc9cda371c21d4d01460"
+experiment = "F10-PPO C3 balanced C2-retention and YOLO-stop distillation v17"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V17_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [[80000, 157999], [161000, 161999], [164000, 164999]]
+
+[curriculum.c3]
+training_seeds = [165001,165002,165003,165004,165005,165006,165007,165008,165009,165010,165011,165012]
+development_seeds = [165101,165102,165103,165104]
+stage_final_seeds = [165201,165202,165203,165204]
+
+[behavior_warm_start.c2]
+enabled = false
+
+[behavior_warm_start.c3]
+enabled = true
+balanced_c2_retention = true
+dataset = "../artifacts/f10_ppo_visual_objects_v16/c3/behavior/behavior_warm_start.npz"
+dataset_sha256 = "16dde8d501d9dd6821019cabe0a62a61bbda9284ae735d801ab6da84feec6e88"
+manifest = "../artifacts/f10_ppo_visual_objects_v16/c3/behavior/behavior_warm_start_manifest.json"
+manifest_sha256 = "54e30f2d9e65353bddd46f64ed4c3d621e664ce5fbd4d4240951a5ce4971b506"
+source_csv = "../artifacts/f10_ppo_visual_objects_v16/c3/behavior/behavior_warm_start_source.csv"
+source_csv_sha256 = "e3bd9381a4133047da142963c5393d0ce676be55b4ad4ede4385bf7ed29894fd"
+source_protocol = "f10_ppo_visual_objects_v16.toml"
+source_protocol_sha256 = "f2d980cf6f7c8181c3cda10c38122a21efc03b19500efc9cda371c21d4d01460"
+source_checkpoint_sha256 = "e997f9bd4b1e0f86e622faead6617ad6cf42cb7b6182309544202172f3700042"
+anchor_dataset_sha256 = "026b1ef32195e2fca4c210563f92cabaf3b220958d1b5b2eb55b48c6498e23a2"
+epochs = 30
+batch_size = 512
+learning_rate = 0.001
+seed = 66000
+
+[wandb]
+group = "f10-ppo-visual-objects-v17-stop-distillation"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v17"

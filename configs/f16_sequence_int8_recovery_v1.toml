@@ -1,0 +1,249 @@
+schema_version = 1
+experiment = "F16 Optimization Sequence and INT8 Cross-Curriculum Recovery v1"
+
+# ---------------------------------------------------------------------------
+# Frozen inheritance. F10-F15 are read-only inputs to F16.
+# ---------------------------------------------------------------------------
+[frozen]
+policy_config = "f10_ppo_visual_objects_v30.toml"
+original_ppo_checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/ppo_selected.pt"
+original_ppo_sha256 = "02e898ce12d71f97016d50ed8a40574807e6d2fd995fc9f0dcd24f357f2c6250"
+f12_pruning_registry = "../artifacts/f12_belief_ppo_compression_v1/pruning/registry.json"
+f12_pruning_registry_sha256 = "5b1925e3ae73302b5371c7a05a1ea593b2b231eefa5167bd15fb5a87c9dcb910"
+f12_ablation_registry = "../artifacts/f12_belief_ppo_compression_v1/final/ablation_registry.json"
+f12_ablation_registry_sha256 = "4160df2cff9162ce89288aa3a405e6f2d8ecf0578e4aa9f365db71e4acdcb91b"
+f12_config = "f12_belief_ppo_compression_v1.toml"
+f15_config = "f15_cross_curriculum_recovery_v1.toml"
+f15_kd_dataset = "../artifacts/f15_cross_curriculum_recovery_v1/recovery/datasets/multicurriculum_public_states.npz"
+f15_kd_dataset_sha256 = "385e2a3a14d3baa1ca0bcfb586447871101f48ad11506395f73b0af9958c1a3c"
+f15_kd_dataset_manifest = "../artifacts/f15_cross_curriculum_recovery_v1/recovery/datasets/dataset_manifest.json"
+f15_recovered_fp32_w64 = "../artifacts/f15_cross_curriculum_recovery_v1/recovery/fp32/w64/actor_multicurriculum_kd_fp32.pt"
+f15_recovered_fp32_w64_sha256 = "64c84cd0bad44ddaa564a5895c88b82254950752b322030ce67df912a3667276"
+f15_localization_decision = "../artifacts/f15_cross_curriculum_recovery_v1/localization/failure_localization_decision.json"
+f15_recovery_decision = "../artifacts/f15_cross_curriculum_recovery_v1/recovery/recovery_decision.json"
+teacher_sha256 = "713d26d93488a17fae246b227e1de38f51501dc87a3d20ac6176036a8a8e64c5"
+observation_dimension = 29
+action_dimension = 2
+activation = "tanh"
+original_hidden_sizes = [256, 256]
+physical_action_ranges = [0.4, 8.0]
+curricula = ["c0", "c1", "c2", "c3", "c4"]
+
+# ---------------------------------------------------------------------------
+# New F16 seed blocks. The 181xxx range was verified absent from every config,
+# artifact seed manifest, report, and script before this file was written.
+# 180301-180308 are the sealed F15 holdout and are NEVER used before a candidate
+# is frozen.
+# ---------------------------------------------------------------------------
+[seeds]
+determinism_preflight = [181001, 181002, 181003, 181004]
+development = [181101, 181102, 181103, 181104, 181105, 181106, 181107, 181108]
+selection = [181201, 181202, 181203, 181204, 181205, 181206, 181207, 181208]
+confirmation = [181301, 181302, 181303, 181304, 181305, 181306, 181307, 181308]
+inherited_sealed_final_holdout = [180301, 180302, 180303, 180304, 180305, 180306, 180307, 180308]
+forbidden_before_candidate_freeze = [180301, 180302, 180303, 180304, 180305, 180306, 180307, 180308]
+
+# ---------------------------------------------------------------------------
+# Determinism gate. The backend is chosen ONLY on reproducibility, never on
+# model performance. Written as PENDING and resolved by the gate before any
+# sequence result is inspected.
+# ---------------------------------------------------------------------------
+[determinism]
+evaluation_backend = "PENDING_DETERMINISM_GATE"
+candidate_backends = ["cuda_strict_deterministic", "cpu_deterministic"]
+repeats_per_cell = 3
+preflight_curricula = ["c0", "c3"]
+preflight_model = "A0"
+maximum_absolute_normalized_action_difference = 1.0e-6
+maximum_absolute_progress_difference_m = 1.0e-3
+require_identical_completion_label = true
+require_identical_failure_label = true
+require_identical_termination_reason = true
+require_identical_step_count = true
+torch_use_deterministic_algorithms = true
+cudnn_deterministic = true
+cudnn_benchmark = false
+cublas_workspace_config = ":4096:8"
+
+# ---------------------------------------------------------------------------
+# Optimization sequences. Survivor nesting (64 subset 96 subset 128 subset 192)
+# was verified programmatically before this freeze, for both layers, against the
+# frozen Original actor and against the stored F12 checkpoints.
+#
+# Progressive pruning therefore follows the SAME frozen survivor hierarchy, so a
+# Direct and a Progressive candidate at the same target width end with the SAME
+# surviving original neurons. The manipulated factor is the distillation
+# trajectory alone. Adaptive re-scoring at each stage would additionally change
+# neuron identity and is a DIFFERENT question that F16 does not test.
+# ---------------------------------------------------------------------------
+[sequence]
+survivor_hierarchy = "frozen_original_derived_nested_topk"
+survivor_nesting_verified = true
+direct_stages = { "64" = [64], "96" = [96], "128" = [128], "192" = [192] }
+progressive_stages = { "64" = [192, 128, 96, 64], "96" = [192, 128, 96], "128" = [192, 128], "192" = [192] }
+width_192_direct_equals_progressive = true
+equivalent_widths_not_double_counted = ["192"]
+matched_endpoint_requirement = "identical surviving original neuron indices at the target width"
+
+[widths]
+targets = [64, 96, 128, 192]
+
+# ---------------------------------------------------------------------------
+# Distillation. Identical to the frozen F15 recovery procedure so that F16
+# isolates sequence and width, not training recipe.
+# ---------------------------------------------------------------------------
+[distillation]
+dataset = "f15_multicurriculum_public_states"
+teacher = "Original Policy"
+loss = "smooth_l1_normalized_physical_action"
+epochs_per_stage = 80
+batch_size = 512
+learning_rate = 0.001
+weight_decay = 0.000001
+seed = 2026081701
+curriculum_balanced = true
+phase_balanced_within_curriculum = true
+copy_state_independent_log_std = true
+uses_ground_truth_action_labels = false
+uses_critic_target = false
+uses_reward = false
+uses_ppo_retraining = false
+report_cumulative_gradient_step_asymmetry = true
+auxiliary_compute_matched_comparison = true
+auxiliary_compute_matched_total_epochs = 320
+
+[quantization]
+backend = "x86"
+framework = "torch.ao.quantization_eager"
+weight_dtype = "qint8"
+activation_dtype = "quint8"
+weight_granularity = "per_channel_symmetric"
+activation_granularity = "per_tensor_affine"
+mode = "static"
+calibration_max_rows_per_curriculum_phase = 1024
+calibration_curriculum_balanced = true
+qat_epochs = 40
+qat_learning_rate = 0.0001
+qat_seed = 2026081702
+run_qat_only_if_ptq_fails = true
+
+# ---------------------------------------------------------------------------
+# Gates. Copied verbatim from the frozen F15 protocol so F16 results remain
+# directly comparable with F15. No threshold may change after results open.
+# ---------------------------------------------------------------------------
+[retention.absolute.c0]
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_invalid_pose_rate = 0.25
+maximum_mean_abs_lateral_error_m = 0.09
+minimum_mean_progress_m = 3.50
+
+[retention.absolute.c1]
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_invalid_pose_rate = 0.25
+maximum_small_loop_completion_drop = 0.25
+
+[retention.absolute.c2]
+maximum_collision_rate = 0.10
+maximum_unsafe_episode_rate = 0.50
+minimum_mean_progress_m = 4.50
+maximum_stationary_fraction = 0.65
+maximum_c1_completion_drop = 0.25
+
+[retention.absolute.c3]
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_restart_rate = 0.50
+maximum_c2_collision_rate_increase = 0.10
+
+[retention.absolute.c4]
+maximum_collision_rate = 0.10
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_mean_progress_m = 4.50
+maximum_unsafe_episode_rate = 0.50
+minimum_restart_rate = 0.50
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_stationary_fraction = 0.65
+
+[retention.relative_to_original]
+maximum_new_collisions = 0
+maximum_collision_rate_increase = 0.0
+maximum_unsafe_episode_rate_increase = 0.125
+maximum_stop_violation_rate_increase = 0.125
+maximum_lane_failure_rate_increase = 0.125
+maximum_invalid_pose_rate_increase = 0.125
+maximum_completion_rate_drop = 0.125
+maximum_restart_rate_drop = 0.125
+maximum_mean_progress_drop_m = 0.50
+maximum_minimum_clearance_drop_m = 0.05
+
+[fidelity]
+maximum_v_mae_mps = 0.020
+maximum_v_p95_abs_error_mps = 0.050
+maximum_omega_mae_rad_s = 0.200
+maximum_omega_p95_abs_error_rad_s = 0.500
+maximum_omega_sign_disagreement = 0.050
+minimum_pearson = 0.980
+minimum_spearman = 0.970
+
+[evaluation]
+paired_seeds_per_curriculum = 8
+same_seeds_for_all_models = true
+omega_sign_deadband_rad_s = 0.2
+store_public_physical_29d = true
+store_public_normalized_29d = true
+store_privileged_evaluation_separately = true
+failure_window_steps_before = 90
+failure_window_steps_after = 45
+representative_failure_rule = "lowest_seed_then_first_objective_failure_event"
+event_priority = ["collision", "unsafe", "stop_violation", "lane_failure", "invalid_pose", "timeout", "termination_without_completion"]
+
+# ---------------------------------------------------------------------------
+# Primary-rollout camera media. F15 could not produce camera evidence because
+# RGB was never stored during the scientific rollout. F16 captures it live.
+# ---------------------------------------------------------------------------
+[media]
+capture_during_primary_rollout = true
+rgb_ring_buffer_steps = 136
+reconstruct_by_replay = false
+rerun_actor_inference_for_video = false
+encode_mp4 = true
+encode_gif = true
+encode_contact_sheet = true
+representative_success_per_curriculum = 1
+pairing_label = "Same-Seed Primary Rollouts"
+forbidden_label = "causal counterfactual trajectory"
+
+# ---------------------------------------------------------------------------
+# Sequence-comparison and selection rules.
+# ---------------------------------------------------------------------------
+[sequence_comparison]
+matched_endpoint_only = true
+forbid_cross_width_sequence_claims = true
+sequence_effect_supported_requires = "difference beyond the frozen determinism tolerance at identical width, precision, curricula, seeds, and gates"
+
+[selection]
+require_int8 = true
+hierarchy = ["smallest_target_width", "prefer_direct_over_progressive", "prefer_ptq_over_qat", "latency_tiebreak_last"]
+forbid_larger_model_when_smaller_passes = true
+
+[final_holdout]
+once_only = true
+requires_frozen_final_candidate = true
+models = ["Original Policy", "Final Recovered INT8 Candidate"]
+replacement_after_access = false
+open_only_if_eligible_int8_candidate_exists = true
+
+[benchmark]
+device = "cpu"
+batch_size = 1
+threads = 1
+warmup_iterations = 1000
+timed_iterations = 10000
+repeats = 5
+
+[artifacts]
+directory = "../artifacts/f16_sequence_int8_recovery_v1"

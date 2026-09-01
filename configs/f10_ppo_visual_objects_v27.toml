@@ -1,0 +1,70 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v27_source.toml"
+extends_sha256 = "8dc8d1e6d5537050b6a1cb0dd618663e81a56735fc0331251951ccf98531ae67"
+experiment = "F10-PPO C4 conditional retention distillation v27"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V27_FORMULATION.md"
+
+[behavior_warm_start.c4]
+enabled = true
+dagger = true
+cumulative_policy_rehearsal = true
+privileged_teacher_guidance = true
+teacher_uses_privileged_truth = true
+precomputed_conditional_distillation = true
+precomputed_checkpoint = "../artifacts/f10_ppo_visual_objects_v27/c4/behavior/ppo_conditional_step0.pt"
+precomputed_checkpoint_sha256 = "2ab218cd60f026268be54295140351e4c9050e87cfc0a949c2d863f72ef52a17"
+precomputed_manifest = "../artifacts/f10_ppo_visual_objects_v27/c4/behavior/conditional_distillation_manifest.json"
+precomputed_manifest_sha256 = "bcdce50691bd17ff3903352cd7d67b238951dd8b432f9228a744ba355e1c3c2d"
+conditional_dataset = "../artifacts/f10_ppo_visual_objects_v27/behavior/conditional_rehearsal.npz"
+conditional_dataset_sha256 = "0dfedb85d950adf3ccd0d16615cc9e6559d15ce5046af424ac8efe4b8f0a7689"
+conditional_dataset_manifest = "../artifacts/f10_ppo_visual_objects_v27/behavior/conditional_rehearsal_manifest.json"
+conditional_dataset_manifest_sha256 = "c6e9db0d61b4f82a062a344d6c0610e1a699f8ddb6088a636d1a3135572acfda"
+dataset = "../artifacts/f10_ppo_visual_objects_v24/c4/behavior/behavior_warm_start.npz"
+dataset_sha256 = "bb9c43ef409b8c1e3c33a50fbfbbd4cbfd0ed0e8e5f18bcd8cd5933b88f96a63"
+manifest = "../artifacts/f10_ppo_visual_objects_v24/c4/behavior/behavior_warm_start_manifest.json"
+manifest_sha256 = "0460559ef673beec836052cfbe909c2ac33ad63e2a306be4570bccf5aa80f79d"
+source_csv = "../artifacts/f10_ppo_visual_objects_v24/c4/behavior/behavior_warm_start_source.csv"
+source_csv_sha256 = "7f3fdde4934208cb5155c7333015d9f6b3fabbaad3f757fdbb378c6764174aaa"
+source_protocol = "f10_ppo_visual_objects_v24_source.toml"
+source_protocol_sha256 = "058f4e22606958add9fa9d70598b29492ca434af45b4e66862087cd943cb4173"
+source_checkpoint_sha256 = "ef30983c4599b7654ec8a506849ae9fe60c9d71b0cc7e3b2bda2f61182f4918a"
+learner_checkpoint = "../artifacts/f10_ppo_visual_objects_v22/c4/ppo_selected.pt"
+learner_checkpoint_sha256 = "de45941a9fafd3bcc5f33f43d333d4814a8844c3f97f1ac29ddca27961b9fab8"
+
+[behavior_warm_start.c4.gate]
+maximum_c2_collision_rate = 0.10
+maximum_c2_unsafe_episode_rate = 0.10
+minimum_c2_mean_progress_m = 4.50
+maximum_c2_invalid_pose_rate = 0.10
+minimum_c3_stop_completion_rate = 0.50
+maximum_c3_stop_violation_rate = 0.25
+minimum_c3_restart_rate = 0.50
+maximum_c3_collision_rate = 0.10
+minimum_completion_rate = 0.50
+minimum_mean_progress_m = 4.50
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_restart_rate = 0.50
+maximum_collision_rate = 0.10
+maximum_unsafe_episode_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_stationary_fraction = 0.65
+
+[ppo_stage_overrides.c4]
+learning_rate = 0.0000002
+n_epochs = 1
+clip_range = 0.01
+entropy_coefficient = 0.0
+max_gradient_norm = 0.02
+target_kl = 0.002
+
+[checkpoint_selection.minimum_updated_global_step]
+c4 = 1024
+
+[wandb]
+group = "f10-ppo-visual-objects-v27-c4-conditional-retention"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v27"

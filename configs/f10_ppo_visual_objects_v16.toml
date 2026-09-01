@@ -1,0 +1,35 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v15.toml"
+extends_sha256 = "c23724c179e922edf6eee92cda80ca74277eeaa4e5b3afb2e46d51f2d7a34781"
+experiment = "F10-PPO C3 roadside stop-sign geometry remediation v16"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V16_FORMULATION.md"
+
+[curriculum_import.c2]
+source_protocol = "f10_ppo_visual_objects_v15.toml"
+source_protocol_sha256 = "c23724c179e922edf6eee92cda80ca74277eeaa4e5b3afb2e46d51f2d7a34781"
+artifact_root = "../artifacts/f10_ppo_visual_objects_v15"
+selected_checkpoint = "../artifacts/f10_ppo_visual_objects_v15/c2/ppo_selected.pt"
+selected_checkpoint_sha256 = "e997f9bd4b1e0f86e622faead6617ad6cf42cb7b6182309544202172f3700042"
+
+[seed_protocol]
+# The failed V15 C3 trajectories are historical diagnostics, never V16 data.
+excluded_historical_seeds = [
+  161001,161002,161003,161004,161005,161006,
+  161007,161008,161009,161010,161011,161012,
+  161101,161102,161103,161104,
+  161201,161202,161203,161204,
+]
+
+[curriculum.c3]
+scenario_config = "scenario_experiment_loop_stop_v2.toml"
+training_seeds = [164001,164002,164003,164004,164005,164006,164007,164008,164009,164010,164011,164012]
+development_seeds = [164101,164102,164103,164104]
+stage_final_seeds = [164201,164202,164203,164204]
+
+[wandb]
+group = "f10-ppo-visual-objects-v16-stop-geometry"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v16"

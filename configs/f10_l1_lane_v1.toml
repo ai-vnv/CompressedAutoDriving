@@ -1,0 +1,143 @@
+schema_version = 1
+stage = "F10-L1"
+
+[provenance]
+action_config = "action_v1.toml"
+action_config_sha256 = "80154e4ff22d4d9be6ebc1d6bfcd2f7d29caa3458c18ab7859420d2940c4d94a"
+environment_spec = "f10_l1_env_v1.json"
+environment_spec_sha256 = "0c1227cf0acfcf10463bb612c938be873d491e091d528b092c178472cd82473d"
+map_name = "small_loop"
+map_sha256 = "4c931485b643537e946a8941a20871ec65daec97f62f658b2c2c60d81eb46d89"
+gym_duckietown_source_version = "6.2.0"
+
+[seed_split]
+training = [13001, 13002, 13003, 13004, 13005, 13006, 13007, 13008, 13009, 13010, 13011, 13012]
+development = [14001, 14002, 14003, 14004]
+final_evaluation = [15001, 15002, 15003, 15004]
+historical_evaluation = [1101, 1102, 1103, 1104, 1105, 1106, 2101, 2102, 3101, 3102, 4101, 4102, 4103, 4104, 5101, 5102, 5103, 5104, 6101, 6102, 6103, 6104, 6105, 6106, 6107, 6108, 7101, 7102, 7103, 7104, 8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108, 8201, 8202, 8203, 8204, 8301, 8302, 8303, 8304, 9101, 10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10018, 11001, 11002, 11003, 11004, 11005, 11006, 12001, 12002, 12003, 12004, 12005, 12006]
+
+[observation]
+ordering = [
+  "lateral_error_m",
+  "heading_error_rad",
+  "actual_linear_velocity_mps",
+  "actual_yaw_rate_rad_s",
+  "previous_linear_velocity_cmd_mps",
+  "previous_angular_velocity_cmd_rad_s",
+]
+normalization = "fixed_physical_scales"
+clip_normalized = 3.0
+
+[observation.scales]
+lateral_error_m = 0.15
+heading_error_rad = 0.50
+actual_linear_velocity_mps = 0.40
+actual_yaw_rate_rad_s = 4.0
+previous_linear_velocity_cmd_mps = 0.40
+previous_angular_velocity_cmd_rad_s = 4.0
+
+[action]
+normalized_low = -1.0
+normalized_high = 1.0
+minimum_linear_velocity_mps = 0.0
+maximum_linear_velocity_mps = 0.4
+minimum_angular_velocity_rad_s = -4.0
+maximum_angular_velocity_rad_s = 4.0
+
+[simulator]
+map = "small_loop"
+direction = "counterclockwise"
+frame_rate_hz = 30
+frame_skip = 1
+episode_horizon_steps = 1500
+camera_width_px = 640
+camera_height_px = 480
+domain_randomization = false
+dynamics_randomization = false
+start_tile = [1, 0]
+base_local_x_m = 0.520
+base_local_z_m = 0.1755
+base_heading_rad = 3.141592653589793
+start_longitudinal_jitter_m = [-0.030, 0.030]
+start_lateral_jitter_m = [-0.020, 0.020]
+start_heading_jitter_rad = [-0.040, 0.040]
+
+[lane_geometry]
+tile_size_m = 0.585
+lane_center_to_yellow_m = 0.117
+ego_half_width_m = 0.075
+yellow_warning_clearance_m = 0.030
+lane_departure_threshold_m = 0.150
+
+[lap]
+minimum_path_length_m = 4.50
+leave_start_radius_m = 0.35
+finish_radius_m = 0.11
+finish_heading_tolerance_rad = 0.35
+
+[reward]
+target_velocity_mps = 0.20
+progress_per_m = 5.0
+living_penalty = -0.002
+lane_lateral_weight = -0.012
+lane_lateral_scale_m = 0.10
+lane_heading_weight = -0.006
+lane_heading_scale_rad = 0.40
+yellow_warning_weight = -0.040
+comfort_linear_change_weight = -0.002
+comfort_angular_change_weight = -0.002
+comfort_steering_weight = -0.0005
+lap_completion_bonus = 10.0
+yellow_crossing_penalty = -8.0
+lane_departure_penalty = -8.0
+invalid_pose_penalty = -10.0
+
+[sac]
+implementation = "canonical_pytorch"
+hidden_sizes = [256, 256]
+activation = "relu"
+learning_rate = 3.0e-4
+gamma = 0.99
+tau = 0.005
+batch_size = 256
+replay_buffer_size = 100000
+learning_starts = 2000
+train_frequency = 1
+gradient_steps = 1
+entropy_coefficient = "auto"
+initial_entropy_coefficient = 0.20
+target_entropy = -2.0
+training_steps = 60000
+checkpoint_interval_steps = 10000
+training_seed = 13000
+device = "cuda"
+
+[checkpoint_selection]
+maximum_invalid_pose_rate = 0.25
+maximum_yellow_crossing_rate = 0.25
+maximum_lane_departure_rate = 0.25
+rule = "safety_filter_then_lap_success_then_lane_error_then_return"
+
+[wandb]
+entity = "vnv"
+project = "DuckiePOMDP"
+group = "f10-l1-small-loop-ccw-v1"
+job_type = "train"
+log_interval_steps = 10
+training_mode = "online"
+smoke_mode = "online"
+
+[acceptance]
+minimum_lap_success_rate = 0.75
+maximum_invalid_pose_rate = 0.0
+maximum_yellow_crossing_rate = 0.0
+maximum_lane_departure_rate = 0.0
+maximum_mean_absolute_lateral_error_m = 0.075
+maximum_p95_absolute_lateral_error_m = 0.125
+maximum_mean_absolute_heading_error_rad = 0.20
+minimum_mean_actual_velocity_mps = 0.10
+minimum_lap_success_gain_over_random = 0.50
+minimum_lap_success_gain_over_always_stop = 0.50
+
+[artifacts]
+directory = "../artifacts/f10_l1"

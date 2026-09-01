@@ -1,0 +1,13 @@
+[action_space]
+allow_reverse = false
+status = "candidate_validated_f2_not_locked"
+maximum_linear_velocity_mps = 0.4
+maximum_angular_velocity_rad_s = 4.0
+
+[actuator_gate]
+map = "small_loop"
+seed = 73
+frame_rate_hz = 30
+maximum_wheel_duty = 0.75
+maximum_turning_radius_m = 0.30
+evidence = "artifacts/action_envelope.csv"

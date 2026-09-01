@@ -1,0 +1,80 @@
+schema_version = 1
+extends = "f10_ppo_visual_v4_codex.toml"
+extends_sha256 = "1df027363f37f7149a785dcae98d4d2da2f4d2c39a31b161f8032d0b8ed184e1"
+experiment = "F10-PPO visual-lane C1 bidirectional remediation v5"
+
+[provenance]
+lane_belief_config = "lane_belief_v4_transfer.toml"
+lane_belief_config_sha256 = "371930c3c27a66e364cecd396def20456f9bded79933699228a921d531184004"
+formulation_doc = "../docs/F10_PPO_C1_REMEDIATION_V5.md"
+
+[curriculum_import.c0]
+source_protocol = "f10_ppo_visual_v4_codex.toml"
+source_protocol_sha256 = "1df027363f37f7149a785dcae98d4d2da2f4d2c39a31b161f8032d0b8ed184e1"
+artifact_root = "../artifacts/f10_ppo_visual_v4_codex"
+selected_checkpoint = "../artifacts/f10_ppo_visual_v4_codex/c0/ppo_selected.pt"
+selected_checkpoint_sha256 = "82cd311d8369b194539d8229d93ff519652121e1de31ef7322574b8f279dcdc2"
+
+[seed_protocol]
+excluded_historical_seeds = [
+  62001,62002,62003,62004,62005,62006,62007,62008,62009,62010,62011,62012,
+  62101,62102,62103,62104,62201,62202,62203,62204,
+  63001,63002,63003,63004,63005,63006,63007,63008,63009,63010,63011,63012,
+  63101,63102,63103,63104,63201,63202,63203,63204,
+  63901,63902,63903,63904,63905,63906,63921,
+  64001,64002,64003,64004,64005,64006,64007,64008,
+  64021,64022,64023,64024,64025,64026,64027,64028,64029,64030,64031,64032,
+  64101,64102,64103,64104,64105,64106,64107,64108,
+  64121,64122,64123,64124,64125,64126,64127,64128,64129,64130,64131,64132,
+  64301,64302,64303,64304,64305,64306,64307,64308,
+  64321,64322,64323,64324,64325,64326,64327,64328,64329,64330,64331,64332,
+  64401,64402,64403,64404,64405,64406,64407,64408,
+  64421,64422,64423,64424,64425,64426,64427,64428,64429,64430,64431,64432,
+]
+
+[curriculum.c0]
+training_seeds = [64501,64502,64503,64504,64505,64506,64507,64508,64509,64510,64511,64512]
+development_seeds = [64601,64602,64603,64604]
+stage_final_seeds = [64701,64702,64703,64704]
+
+[curriculum.c1]
+training_steps = 61440
+checkpoint_interval_steps = 10240
+training_seeds = [65001,65002,65003,65004,65005,65006,65007,65008,65009,65010,65011,65012]
+development_seeds = [65101,65102,65103,65104]
+stage_final_seeds = [65201,65202,65203,65204]
+
+[curriculum.c2]
+training_seeds = [66001,66002,66003,66004,66005,66006,66007,66008,66009,66010,66011,66012]
+development_seeds = [66101,66102,66103,66104]
+stage_final_seeds = [66201,66202,66203,66204]
+
+[curriculum.c3]
+training_seeds = [67001,67002,67003,67004,67005,67006,67007,67008,67009,67010,67011,67012]
+development_seeds = [67101,67102,67103,67104]
+stage_final_seeds = [67201,67202,67203,67204]
+
+[curriculum.c4]
+training_seeds = [68001,68002,68003,68004,68005,68006,68007,68008,68009,68010,68011,68012]
+development_seeds = [68101,68102,68103,68104]
+stage_final_seeds = [68201,68202,68203,68204]
+
+[global_final]
+small_loop = [69001,69002,69003,69004]
+experiment_loop = [69101,69102,69103,69104]
+pedestrian = [69201,69202,69203,69204]
+stop = [69301,69302,69303,69304]
+combined = [69401,69402,69403,69404]
+
+[wandb]
+group = "f10-ppo-visual-v5-c1-remediation"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_v5_c1"
+
+[v5_remediation]
+bidirectional_lane_calibration = true
+experiment_loop_wide_starts = true
+ppo_hyperparameters_changed = false
+reward_changed = false
+action_changed = false

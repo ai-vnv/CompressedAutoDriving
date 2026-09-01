@@ -1,0 +1,18 @@
+{
+  "base": "python3.10",
+  "pip_phases": [
+    ["numpy==1.26.4", "gym==0.26.2", "pyglet==1.5.27", "tomli==2.4.1"],
+    ["duckietown-gym-daffy source overlay 6.2.0"]
+  ],
+  "source_overlays": [
+    "/home/pannntastic/aivnv/duckie/src"
+  ],
+  "environment": {
+    "DUCKIETOWN_HEADLESS": "1",
+    "PYTHONPATH": "src:/home/pannntastic/aivnv/duckie/src"
+  },
+  "smoke": {
+    "command": "/home/pannntastic/aivnv/duckie/.venv/bin/python -m pytest tests -q --disable-warnings",
+    "expected": "78 passed"
+  }
+}

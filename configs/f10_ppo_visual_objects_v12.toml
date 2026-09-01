@@ -1,0 +1,65 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v11.toml"
+extends_sha256 = "3a51e7e4b58b0117171ad4aa99f7b2ae0a75dc94a467cb56cadff25fb2c4d21f"
+experiment = "F10-PPO experiment_loop separated-object safe-passage curriculum v12"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V12_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [[80000, 139999]]
+
+[curriculum.c0]
+training_seeds = [140001,140002,140003,140004,140005,140006,140007,140008,140009,140010,140011,140012]
+development_seeds = [140101,140102,140103,140104]
+stage_final_seeds = [140201,140202,140203,140204]
+[curriculum.c1]
+training_seeds = [141001,141002,141003,141004,141005,141006,141007,141008,141009,141010,141011,141012]
+development_seeds = [141101,141102,141103,141104]
+stage_final_seeds = [141201,141202,141203,141204]
+[curriculum.c2]
+training_steps = 61440
+checkpoint_interval_steps = 10240
+training_seeds = [142001,142002,142003,142004,142005,142006,142007,142008,142009,142010,142011,142012]
+development_seeds = [142101,142102,142103,142104]
+stage_final_seeds = [142201,142202,142203,142204]
+[curriculum.c3]
+training_seeds = [143001,143002,143003,143004,143005,143006,143007,143008,143009,143010,143011,143012]
+development_seeds = [143101,143102,143103,143104]
+stage_final_seeds = [143201,143202,143203,143204]
+[curriculum.c4]
+training_seeds = [144001,144002,144003,144004,144005,144006,144007,144008,144009,144010,144011,144012]
+development_seeds = [144101,144102,144103,144104]
+stage_final_seeds = [144201,144202,144203,144204]
+
+[global_final]
+small_loop = [145001,145002,145003,145004]
+experiment_loop = [145101,145102,145103,145104]
+pedestrian = [145201,145202,145203,145204]
+stop = [145301,145302,145303,145304]
+combined = [145401,145402,145403,145404]
+
+[pedestrian_training_curriculum]
+speeds_mps = [0.20, 0.20, 0.20]
+phase_end_episodes = [8, 16]
+reverse_start_delays_s = [0.60, 1.00, 1.55]
+
+[curriculum_transition.c2]
+reset_optimizer = true
+reset_log_std = -1.20
+
+[reward]
+pedestrian_safety_distance_m = 0.65
+pedestrian_proximity_weight = -0.25
+pedestrian_stationary_proximity_factor = 0.0
+pedestrian_unsafe_penalty = -1.0
+pedestrian_safe_clearance_bonus = 3.0
+pedestrian_collision_terminal_penalty = -20.0
+lane_failure_penalty = -12.0
+invalid_pose_penalty = -12.0
+
+[wandb]
+group = "f10-ppo-visual-objects-v12-experiment-loop"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v12"

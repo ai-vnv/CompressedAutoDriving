@@ -1,0 +1,78 @@
+schema_version = 1
+name = "visual_lane_belief_v4_bidirectional_transfer"
+range_semantics = "signed lane-centre error from front RGB"
+
+[lane_perception]
+lane_half_width_m = 0.117
+roi_top_fraction = 0.38
+row_stride_px = 2
+minimum_run_width_px = 2
+minimum_point_count = 8
+minimum_forward_m = 0.10
+maximum_forward_m = 0.75
+pose_minimum_forward_m = 0.12
+pose_maximum_forward_m = 0.40
+maximum_abs_lateral_m = 0.60
+minimum_forward_span_m = 0.08
+boundary_normal_fit_radius_m = 0.10
+boundary_start_tolerance_m = 0.20
+yellow_min_red = 115
+yellow_min_green = 65
+yellow_red_blue_margin = 90
+yellow_green_blue_margin = 55
+white_min_intensity = 150
+white_max_channel_spread = 80
+adaptive_marking_min_value = 80
+adaptive_marking_dark_percentile = 80.0
+adaptive_marking_bright_percentile = 95.0
+robust_sigma_threshold = 2.75
+lateral_std_floor_m = 0.008
+heading_std_floor_rad = 0.015
+curvature_std_floor_inv_m = 0.12
+dual_boundary_fusion_enabled = true
+maximum_boundary_disagreement_m = 0.060
+single_boundary_std_multiplier = 1.50
+adaptive_boundary_std_multiplier = 2.00
+
+# Offline robust affine fit on disjoint small_loop + experiment_loop
+# calibration trajectories. Simulator truth is never consumed at runtime.
+[lane_calibration]
+lateral_bias_m = 0.0
+heading_bias_rad = 0.0
+curvature_bias_inv_m = 0.0
+lateral_sigma_m = 0.014006739472774152
+heading_sigma_rad = 0.10446553365249046
+curvature_sigma_inv_m = 2.0477452161288636
+
+[lane_calibration.affine]
+matrix = [
+  [0.13299999579328586, 0.02996449480719838, -0.0012295669190821208],
+  [1.1712832697983475, 0.38543424773961577, -0.027053409492536817],
+  [16.83081508145669, 7.178832196591063, 0.27735522071372376],
+]
+offset = [
+  0.002723921573840507,
+  0.03417172215582312,
+  -0.08929323673374956,
+]
+
+[lane_belief]
+lateral_process_std_m_per_sqrt_s = 0.012
+heading_process_std_rad_per_sqrt_s = 0.025
+curvature_process_std_inv_m_per_sqrt_s = 0.20
+initial_lateral_std_m = 0.20
+initial_heading_std_rad = 0.50
+initial_curvature_std_inv_m = 2.00
+covariance_floor = 1.0e-10
+detection_validity_gain = 0.65
+miss_validity_decay = 0.82
+
+# Reporting-only uncertainty calibration fitted on the disjoint development
+# trajectories.  The scale is the larger of the empirical 68th-percentile
+# standardized residual and the scale required for at least 85% coverage at
+# the nominal 95% interval.  It never feeds back into the EKF state.
+[lane_belief_uncertainty]
+heading_floor_rad = 0.0
+heading_scale = 1.8784279068851188
+lateral_floor_m = 0.0
+lateral_scale = 1.2873847974269268

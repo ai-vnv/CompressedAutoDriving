@@ -1,0 +1,56 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v14.toml"
+extends_sha256 = "f8832bb9568dd8d47f8c7908992c4d42bb1d490bec32e2821f8239441473ba8b"
+experiment = "F10-PPO C2 balanced C1-retention and YOLO-pedestrian distillation v15"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V15_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [[80000, 157999]]
+
+[curriculum.c0]
+training_seeds = [158001,158002,158003,158004,158005,158006,158007,158008,158009,158010,158011,158012]
+development_seeds = [158101,158102,158103,158104]
+stage_final_seeds = [158201,158202,158203,158204]
+[curriculum.c1]
+training_seeds = [159001,159002,159003,159004,159005,159006,159007,159008,159009,159010,159011,159012]
+development_seeds = [159101,159102,159103,159104]
+stage_final_seeds = [159201,159202,159203,159204]
+[curriculum.c2]
+training_steps = 40960
+checkpoint_interval_steps = 10240
+training_seeds = [160001,160002,160003,160004,160005,160006,160007,160008,160009,160010,160011,160012]
+development_seeds = [160101,160102,160103,160104]
+stage_final_seeds = [160201,160202,160203,160204]
+[curriculum.c3]
+training_seeds = [161001,161002,161003,161004,161005,161006,161007,161008,161009,161010,161011,161012]
+development_seeds = [161101,161102,161103,161104]
+stage_final_seeds = [161201,161202,161203,161204]
+[curriculum.c4]
+training_seeds = [162001,162002,162003,162004,162005,162006,162007,162008,162009,162010,162011,162012]
+development_seeds = [162101,162102,162103,162104]
+stage_final_seeds = [162201,162202,162203,162204]
+
+[global_final]
+small_loop = [163001,163002,163003,163004]
+experiment_loop = [163101,163102,163103,163104]
+pedestrian = [163201,163202,163203,163204]
+stop = [163301,163302,163303,163304]
+combined = [163401,163402,163403,163404]
+
+[behavior_warm_start.c2]
+enabled = true
+multitask_distillation = true
+dataset = "../artifacts/f10_ppo_visual_objects_v15/c2/behavior_warm_start.npz"
+dataset_sha256 = "026b1ef32195e2fca4c210563f92cabaf3b220958d1b5b2eb55b48c6498e23a2"
+epochs = 30
+batch_size = 512
+learning_rate = 0.001
+seed = 65000
+
+[wandb]
+group = "f10-ppo-visual-objects-v15-balanced-distillation"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v15"

@@ -1,0 +1,33 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v19.toml"
+extends_sha256 = "3f648a7cd117af83b4bbdc651df8742b6f25603f297b4e29a2c3d18eb429dc1d"
+experiment = "F10-PPO C3 KL-guarded on-policy remediation v20"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V20_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 157999],
+  [161000, 161999],
+  [164000, 167999],
+]
+
+[curriculum.c3]
+training_seeds = [168001,168002,168003,168004,168005,168006,168007,168008,168009,168010,168011,168012]
+development_seeds = [168101,168102,168103,168104]
+stage_final_seeds = [168201,168202,168203,168204]
+
+[ppo_stage_overrides.c3]
+learning_rate = 0.00001
+n_epochs = 2
+clip_range = 0.05
+entropy_coefficient = 0.0
+max_gradient_norm = 0.1
+target_kl = 0.01
+
+[wandb]
+group = "f10-ppo-visual-objects-v20-c3-kl-guard"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v20"

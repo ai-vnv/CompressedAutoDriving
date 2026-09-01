@@ -1,0 +1,27 @@
+schema_version = 1
+
+[oracle_detection]
+# Synthetic stress-test assumptions, not measured detector performance.
+minimum_range_m = 0.05
+maximum_range_m = 2.0
+maximum_abs_bearing_rad = 1.20
+miss_probability = 0.20
+false_positive_probability = 0.0
+
+[ekf]
+# Continuous-time noise densities used as Q = diag(std^2 * dt).
+position_process_std_m_per_sqrt_s = 0.001
+velocity_process_std_mps_per_sqrt_s = 0.005
+initial_velocity_std_mps = 0.35
+minimum_range_m = 0.001
+covariance_floor = 1.0e-12
+clean_range_sigma_m = 1.0e-5
+clean_bearing_sigma_rad = 1.0e-5
+
+[existence]
+# Synthetic Version-1 existence model. Confidence is not used here.
+prior_probability = 0.50
+detection_probability = 0.80
+false_positive_probability = 0.02
+survival_probability = 0.995
+birth_probability = 0.005

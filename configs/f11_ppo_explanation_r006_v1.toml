@@ -1,0 +1,104 @@
+schema_version = 1
+experiment = "F11 R006 once-only confirmatory semantic action interventions"
+
+[frozen]
+r004_config = "f11_ppo_explanation_r004_v1.toml"
+r004_config_sha256 = "e08a52f8c295b43614b8d7c9473b192cc6600fee82342e9d70b5ded28696fb6a"
+r004_protocol = "../docs/F11_R004_PROTOCOL.md"
+r004_protocol_sha256 = "877f231a04f302be150ecc5af089d6615ec56a57c3480b86cb32d32cf8703783"
+r004_report = "../docs/F11_R004_REPORT_FOR_REVIEW.md"
+r004_report_sha256 = "c6194366fb8c018d3d12bf6ee3d3ec0de68099f8b147e05a3d1ca5ab9fa8e9eb"
+r004_metrics = "../artifacts/f11_ppo_explanation_v2/r004/final_attribution_metrics.json"
+r004_metrics_sha256 = "dffb8b316ec14aab8f3e0fbad3e07fa82eed756884215f8beeaa3b2aa6fac869"
+r004_manifest = "../artifacts/f11_ppo_explanation_v2/r004/artifact_manifest.json"
+r004_manifest_sha256 = "40096b1f6b37d6efaff12f5080ecd9be62a37ed6a1c99a31dbd2a6eb2821917d"
+r004_trace = "../artifacts/f11_ppo_explanation_v2/r004/locked_public_trace.npz"
+r004_trace_sha256 = "a125ffa0c26908380b83270752140e2daf006fe73f5dac4191321a570c3881d6"
+r004_trace_manifest = "../artifacts/f11_ppo_explanation_v2/r004/locked_trace_manifest.json"
+r004_trace_manifest_sha256 = "bff0fc6b31909eee1d99d206129ba121d854ec6a73df1920c015e139c2974af2"
+r004_final_attribution = "../artifacts/f11_ppo_explanation_v2/r004/final_mean_attribution.npz"
+r004_final_attribution_sha256 = "e7dfb24485862285c6690ffbaaf55f60c395b3a58dfc6113b66bafcc3bbaea4d"
+r004_launch_claim = "../artifacts/f11_ppo_explanation_v2/r004/once_only_launch_claim.json"
+r004_launch_claim_sha256 = "b1c0b7abc920a345a8abd273e467c70cd67f31c8b4fc36f9ebc97320ad626535"
+r003_config = "f11_ppo_explanation_development_v2.toml"
+r003_config_sha256 = "d1c449ef14aabf82a1d4cd275d8555f6ab1424d1119f844640f62002512f7a66"
+r003_metrics = "../artifacts/f11_ppo_explanation_v2/r003/intervention_validation.json"
+r003_metrics_sha256 = "ebc2e3847cda35bfa77dcfd33a90b3ddf603b6aea7d94e892424869b08cf4991"
+r003_operator_source = "../src/duckie_pomdp/explain/development_protocol.py"
+r003_operator_source_sha256 = "061d65020884ba4d59f93f1104f18dffe3752d388d4ca6c465d2b2456b4629b4"
+r004_runner = "../experiments/run_f11_r004_once.py"
+r004_runner_sha256 = "8b6fa60ae3c08c21d7dc76e932729270c24bbc10978de788d7ac06a77112226a"
+r006_protocol = "../docs/F11_R006_PROTOCOL.md"
+r006_protocol_sha256 = "11b872d937830961072f3a65548d0901cb5a5624eba712ca486c665976cf3ed7"
+r006_runner = "../experiments/run_f11_r006_once.py"
+r006_runner_sha256 = "f0a472fa56995ac528b92d8536ed6baf3a20a0ff48cbf8966fa7182fb59a0c86"
+r006_statistics_source = "../src/duckie_pomdp/explain/confirmatory_intervention.py"
+r006_statistics_source_sha256 = "7c15fa3217a1bc24c2d4ef40d3f20bbbcf1a2ce5367375a44aac4064fb9bc579"
+
+[data]
+stage = "c4"
+locked_evaluation_seeds = [177101, 177102, 177103, 177104, 177105, 177106, 177107, 177108]
+forbidden_development_seeds = [177001, 177002, 177003, 177004]
+expected_trace_rows = 17600
+expected_sample_count = 4400
+reuse_r004_sample_index = true
+rerender_simulator = false
+store_privileged_truth = false
+once_only = true
+
+[phases]
+pedestrian_existence_threshold = 0.4
+pedestrian_relevant_max_range_m = 1.2
+lane_curve_min_abs_curvature_inv_m = 1.5
+stop_satisfied_vicinity_m = 0.5
+required = ["nominal", "lane_curve", "pedestrian_relevant", "stop_required", "stop_satisfied"]
+
+[intervention]
+names = [
+  "pedestrian_absent",
+  "stop_absent",
+  "lane_centered",
+  "lane_low_confidence",
+  "previous_action_neutral",
+  "sham",
+]
+operator_source = "R003_frozen_unchanged"
+maximum_normalized_absolute_value = 3.0
+critic_role = "descriptive_appendix"
+
+[bootstrap]
+unit = "locked_evaluation_seed"
+replicates = 2000
+seed = 2026081606
+confidence_level = 0.95
+
+[gate]
+direction_tolerance = 0.0
+minimum_directional_consistency = 0.75
+pedestrian_minimum_mean_delta_v_mps = 0.10
+pedestrian_nonrelevant_maximum_mean_absolute_delta_v_mps = 0.01
+stop_minimum_mean_delta_v_mps = 0.05
+stop_negative_control_phase = "pedestrian_relevant"
+stop_control_maximum_mean_absolute_delta_v_mps = 0.02
+lane_minimum_mean_absolute_delta_omega_rad_s = 0.10
+lane_negative_control_phase = "pedestrian_relevant"
+lane_minimum_curve_to_control_effect_ratio = 1.5
+sham_action_absolute_tolerance = 1.0e-7
+factual_action_replay_tolerance = 1.0e-6
+thresholds_are_immutable = true
+
+[diagnostic]
+pedestrian_bearing_center_half_width_rad = 0.05
+pedestrian_yaw_direction_is_not_a_gate = true
+report_all_interventions_all_phases = true
+
+[output]
+directory = "../artifacts/f11_ppo_explanation_v2/r006"
+launch_claim = "once_only_launch_claim.json"
+interventions = "semantic_counterfactuals.npz"
+paired_effects = "paired_action_effects.csv"
+summary = "effect_summary.csv"
+bearing_summary = "pedestrian_yaw_by_bearing.csv"
+metrics = "confirmatory_intervention_metrics.json"
+manifest = "artifact_manifest.json"
+failure_marker = "failure_marker.json"

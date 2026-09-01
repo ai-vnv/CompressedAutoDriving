@@ -1,0 +1,44 @@
+schema_version = 1
+name = "visual_lane_belief_v6_mobilenet_rgb"
+range_semantics = "signed lane-centre error inferred from front RGB"
+
+[lane_rgb_model]
+enabled = true
+architecture = "mobilenet_v3_small_lane_pose_v1"
+checkpoint = "../artifacts/f10_ppo_visual_v7/lane_rgb_model/best.pt"
+checkpoint_sha256 = "d02b182843dd0e0bc3931e1bc36b09aea11aa1ab99ad5456c910fbc77128144d"
+device = "auto"
+image_size_px = 224
+target_scales = [0.12, 0.70, 15.0]
+residual_sigmas = [
+  0.010068201834104932,
+  0.06639599558721176,
+  1.2202848021717865,
+]
+
+# The learned estimator already emits calibrated physical values.  This
+# identity layer preserves the common LaneMeasurement -> EKF boundary.
+[lane_calibration]
+lateral_bias_m = 0.0
+heading_bias_rad = 0.0
+curvature_bias_inv_m = 0.0
+lateral_sigma_m = 0.010068201834104932
+heading_sigma_rad = 0.06639599558721176
+curvature_sigma_inv_m = 1.2202848021717865
+
+[lane_belief]
+lateral_process_std_m_per_sqrt_s = 0.012
+heading_process_std_rad_per_sqrt_s = 0.025
+curvature_process_std_inv_m_per_sqrt_s = 0.20
+initial_lateral_std_m = 0.20
+initial_heading_std_rad = 0.50
+initial_curvature_std_inv_m = 2.00
+covariance_floor = 1.0e-10
+detection_validity_gain = 0.65
+miss_validity_decay = 0.82
+
+[lane_belief_uncertainty]
+lateral_floor_m = 0.0
+lateral_scale = 1.0
+heading_floor_rad = 0.0
+heading_scale = 1.0

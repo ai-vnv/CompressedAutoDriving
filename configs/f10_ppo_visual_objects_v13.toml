@@ -1,0 +1,55 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v12.toml"
+extends_sha256 = "ea56ee81fa7bd125bb1cad237cef803620e54031bc102c6b8b5ef0bedcc665d8"
+experiment = "F10-PPO experiment_loop policy-visible behavior warm start v13"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V13_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [[80000, 145999]]
+
+[curriculum.c0]
+training_seeds = [146001,146002,146003,146004,146005,146006,146007,146008,146009,146010,146011,146012]
+development_seeds = [146101,146102,146103,146104]
+stage_final_seeds = [146201,146202,146203,146204]
+[curriculum.c1]
+training_seeds = [147001,147002,147003,147004,147005,147006,147007,147008,147009,147010,147011,147012]
+development_seeds = [147101,147102,147103,147104]
+stage_final_seeds = [147201,147202,147203,147204]
+[curriculum.c2]
+training_steps = 40960
+checkpoint_interval_steps = 10240
+training_seeds = [148001,148002,148003,148004,148005,148006,148007,148008,148009,148010,148011,148012]
+development_seeds = [148101,148102,148103,148104]
+stage_final_seeds = [148201,148202,148203,148204]
+[curriculum.c3]
+training_seeds = [149001,149002,149003,149004,149005,149006,149007,149008,149009,149010,149011,149012]
+development_seeds = [149101,149102,149103,149104]
+stage_final_seeds = [149201,149202,149203,149204]
+[curriculum.c4]
+training_seeds = [150001,150002,150003,150004,150005,150006,150007,150008,150009,150010,150011,150012]
+development_seeds = [150101,150102,150103,150104]
+stage_final_seeds = [150201,150202,150203,150204]
+
+[global_final]
+small_loop = [151001,151002,151003,151004]
+experiment_loop = [151101,151102,151103,151104]
+pedestrian = [151201,151202,151203,151204]
+stop = [151301,151302,151303,151304]
+combined = [151401,151402,151403,151404]
+
+[behavior_warm_start.c2]
+enabled = true
+dataset = "../artifacts/f10_ppo_visual_objects_v13/c2/behavior_warm_start.npz"
+dataset_sha256 = "1c2301a714daea9e84be903fb9158500c6b9547a47d420f5561cedb2e24c2268"
+epochs = 30
+batch_size = 512
+learning_rate = 0.001
+seed = 63000
+
+[wandb]
+group = "f10-ppo-visual-objects-v13-experiment-loop"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v13"

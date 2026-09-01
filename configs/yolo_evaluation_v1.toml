@@ -1,0 +1,48 @@
+schema_version = 1
+
+[checkpoint]
+path = "artifacts/yolo_v1/best.pt"
+sha256 = "3d4f816d440690493b856d25403a84a3249e4250599319c32569b97cb8d7482c"
+class_names = ["stop_sign", "duckie"]
+
+[dataset]
+root = "datasets/duckietown_detection_v1"
+manifest = "artifacts/detection_dataset_v1_manifest.json"
+split = "test"
+expected_images = 164
+
+[detector]
+# Fixed during F8-prep readiness; never selected on the final test results.
+confidence_threshold = 0.10
+nms_iou_threshold = 0.70
+image_size = 480
+device = 0
+max_detections = 300
+
+[matching]
+iou_threshold = 0.50
+
+[average_precision]
+# Standard low score floor used only to construct PR curves. The deployed
+# operating point above remains 0.10.
+confidence_floor = 0.001
+
+[measurement]
+f5b_model = "configs/measurement_model_v1.toml"
+range_semantics = "object_origin"
+bottom_point = "bbox_bottom_center"
+
+[outliers]
+worst_matched_per_class = 4
+worst_false_or_missed_per_class = 2
+
+[artifacts]
+detection_csv = "artifacts/yolo_detection_validation.csv"
+detection_metrics_json = "artifacts/yolo_detection_metrics.json"
+measurement_csv = "artifacts/yolo_measurement_validation.csv"
+measurement_metrics_json = "artifacts/yolo_measurement_metrics.json"
+measurement_noise_json = "artifacts/yolo_measurement_noise_v1.json"
+measurement_model_toml = "configs/measurement_model_yolo_v1.toml"
+error_case_dir = "artifacts/yolo_error_cases"
+run_log = "artifacts/f8_yolo_evaluation.log"
+

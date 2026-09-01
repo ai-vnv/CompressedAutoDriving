@@ -1,0 +1,91 @@
+schema_version = 1
+experiment = "F11 v2 frozen belief-PPO explanation"
+
+[frozen_policy]
+stage = "c4"
+config = "f10_ppo_visual_objects_v30.toml"
+config_sha256 = "85e2cbd321e2db53de270e3c0b885a723137d17e94af3640ed5a8a9f917fe829"
+checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/ppo_selected.pt"
+checkpoint_sha256 = "02e898ce12d71f97016d50ed8a40574807e6d2fd995fc9f0dcd24f357f2c6250"
+observation_dimension = 29
+hidden_sizes = [256, 256]
+maximum_linear_velocity_mps = 0.4
+maximum_angular_velocity_rad_s = 4.0
+
+[frozen_perception]
+lane_checkpoint = "../artifacts/f10_ppo_visual_v9/lane_rgb_model/best.pt"
+lane_checkpoint_sha256 = "91d471d5ccf9875012d564fa8937838fd0f95e6e3e6aabaefcad654d9b4bb84f"
+yolo_checkpoint = "../artifacts/yolo_v1/best.pt"
+yolo_checkpoint_sha256 = "3d4f816d440690493b856d25403a84a3249e4250599319c32569b97cb8d7482c"
+
+[protocol]
+plan = "../refine-logs/EXPERIMENT_PLAN.md"
+plan_sha256 = "e257ede7e62791305924df9a2f1d38245e321dbc373fb2c83d432392585a5d62"
+explanation_target = "ppo_mlp_only"
+primary_attribution_statistic = "semantic_group_share"
+actor_target = "deterministic_distribution_mean_before_sampling"
+counterfactual_wording = "counterfactual_policy_dependence"
+critic_role = "appendix"
+privileged_truth_policy_input = false
+
+[seeds]
+r001_pilot = 177000
+development = [177001, 177002, 177003, 177004]
+locked_evaluation = [177101, 177102, 177103, 177104, 177105, 177106, 177107, 177108]
+
+[r001]
+maximum_episode_steps = 128
+replay_absolute_tolerance = 1.0e-6
+require_real_front_rgb = true
+require_lane_runtime = true
+require_yolo_runtime = true
+output_directory = "../artifacts/f11_ppo_explanation_v2/r001"
+
+[feature_groups]
+Lane = [
+  "lane_validity_probability",
+  "lane_lateral_error_mean_m",
+  "lane_lateral_error_std_m",
+  "lane_heading_error_mean_rad",
+  "lane_heading_error_std_rad",
+  "lane_curvature_mean_inv_m",
+  "lane_curvature_std_inv_m",
+]
+Ego = [
+  "actual_linear_velocity_mps",
+  "actual_yaw_rate_rad_s",
+]
+StopLine = [
+  "stop_line_distance_m",
+]
+Pedestrian = [
+  "pedestrian_existence_probability",
+  "pedestrian_range_mean_m",
+  "pedestrian_range_std_m",
+  "pedestrian_bearing_mean_rad",
+  "pedestrian_bearing_std_rad",
+  "pedestrian_radial_velocity_mean_mps",
+  "pedestrian_radial_velocity_std_mps",
+  "pedestrian_bearing_rate_mean_rad_s",
+  "pedestrian_bearing_rate_std_rad_s",
+]
+Stop = [
+  "stop_sign_existence_probability",
+  "stop_sign_range_mean_m",
+  "stop_sign_range_std_m",
+  "stop_sign_bearing_mean_rad",
+  "stop_sign_bearing_std_rad",
+  "stop_mode_none",
+  "stop_mode_required",
+  "stop_mode_satisfied",
+]
+PreviousAction = [
+  "previous_linear_velocity_cmd_mps",
+  "previous_angular_velocity_cmd_rad_s",
+]
+
+[artifacts]
+root = "../artifacts/f11_ppo_explanation_v2"
+historical_f11_v1 = "../artifacts/f11_ppo_integrated_gradients_v1"
+historical_f11_v1_status = "LIMITED_immutable"
+

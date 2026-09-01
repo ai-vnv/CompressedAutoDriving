@@ -1,0 +1,28 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v25_source.toml"
+extends_sha256 = "160926d475b5187255f6d6c9f43f88b525a5fc816ba944f144e36fcf505f4c89"
+experiment = "F10-PPO C4 conditional retention distillation source v27"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V27_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 157999],
+  [161000, 161999],
+  [164000, 167999],
+  [169000, 173999],
+]
+
+[curriculum.c4]
+training_steps = 4096
+checkpoint_interval_steps = 1024
+training_seeds = [174001,174002,174003,174004,174005,174006,174007,174008,174009,174010,174011,174012]
+development_seeds = [174101,174102,174103,174104]
+stage_final_seeds = [174201,174202,174203,174204]
+
+[wandb]
+group = "f10-ppo-visual-objects-v27-c4-conditional-retention"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v27"

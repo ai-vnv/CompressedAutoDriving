@@ -1,0 +1,296 @@
+schema_version = 1
+experiment = "F17 Optimization-Method Order and Quantization Recovery v1"
+
+# ---------------------------------------------------------------------------
+# Scope. F17 asks ONE primary question:
+#
+#   After pruning-induced competence collapse and successful multi-curriculum
+#   distillation recovery, how does the placement/order of distillation and
+#   quantization affect cross-curriculum retention?
+#
+# This is the investigator's intended meaning of "does optimization sequence
+# matter". It is NOT Direct-versus-Progressive pruning, which is a PRUNING
+# SCHEDULE and was studied separately in F16.
+#
+# Actor width and pruning schedule are HELD FIXED for the primary comparisons.
+# Only the optimization pathway changes.
+# ---------------------------------------------------------------------------
+[scope]
+primary_question = "placement/order of pruning, distillation, PTQ and QAT"
+manipulated_factor = "optimization_method_order"
+held_fixed = ["actor_width", "pruning_schedule", "teacher", "kd_dataset", "evaluation_block", "gates"]
+not_studied_here = ["pruning_schedule (Direct vs Progressive) — see F16", "training-realization robustness — see F16"]
+no_large_training_seed_sweep = true
+no_width_sweep = true
+
+[frozen]
+policy_config = "f10_ppo_visual_objects_v30.toml"
+original_ppo_checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/ppo_selected.pt"
+original_ppo_sha256 = "02e898ce12d71f97016d50ed8a40574807e6d2fd995fc9f0dcd24f357f2c6250"
+f12_ablation_registry = "../artifacts/f12_belief_ppo_compression_v1/final/ablation_registry.json"
+f12_ablation_registry_sha256 = "4160df2cff9162ce89288aa3a405e6f2d8ecf0578e4aa9f365db71e4acdcb91b"
+f12_pruning_registry = "../artifacts/f12_belief_ppo_compression_v1/pruning/registry.json"
+f12_pruning_registry_sha256 = "5b1925e3ae73302b5371c7a05a1ea593b2b231eefa5167bd15fb5a87c9dcb910"
+f12_config = "f12_belief_ppo_compression_v1.toml"
+f15_config = "f15_cross_curriculum_recovery_v1.toml"
+f16_config = "f16_sequence_int8_recovery_v1.toml"
+f15_kd_dataset = "../artifacts/f15_cross_curriculum_recovery_v1/recovery/datasets/multicurriculum_public_states.npz"
+f15_kd_dataset_sha256 = "385e2a3a14d3baa1ca0bcfb586447871101f48ad11506395f73b0af9958c1a3c"
+teacher_sha256 = "713d26d93488a17fae246b227e1de38f51501dc87a3d20ac6176036a8a8e64c5"
+observation_dimension = 29
+action_dimension = 2
+activation = "tanh"
+physical_action_ranges = [0.4, 8.0]
+curricula = ["c0", "c1", "c2", "c3", "c4"]
+
+# ---------------------------------------------------------------------------
+# Canonical recovered FP32 anchor. Not retrained, not modified. Every downstream
+# variant is evaluated relative to this one fixed policy, so an A3 -> A6 change
+# is associated with the frozen PTQ procedure applied to THIS checkpoint.
+# ---------------------------------------------------------------------------
+[anchor]
+name = "Recovered FP32 anchor (pruning + balanced C0-C4 KD, width 64)"
+checkpoint = "../artifacts/f15_cross_curriculum_recovery_v1/recovery/fp32/w64/actor_multicurriculum_kd_fp32.pt"
+sha256 = "64c84cd0bad44ddaa564a5895c88b82254950752b322030ce67df912a3667276"
+width = 64
+pruning_schedule = "Direct"
+retrain = false
+modify = false
+already_verified_on_primary_block = true
+verification_source = "../artifacts/f16_sequence_int8_recovery_v1/closed_loop/transfer_F15R64_on_f15_selection_episodes.csv"
+verification_result = "PASS on all five curricula, deterministic backend, seeds 180201-180208"
+
+# ---------------------------------------------------------------------------
+# Primary evaluation block. Already-opened F15 recovery-selection seeds, on which
+# the anchor has been independently verified to pass C0-C4 deterministically.
+# The sealed final holdout stays closed.
+# ---------------------------------------------------------------------------
+[seeds]
+primary_evaluation = [180201, 180202, 180203, 180204, 180205, 180206, 180207, 180208]
+sealed_final_holdout = [180301, 180302, 180303, 180304, 180305, 180306, 180307, 180308]
+forbidden_before_candidate_freeze = [180301, 180302, 180303, 180304, 180305, 180306, 180307, 180308]
+same_block_for_every_branch = true
+
+[determinism]
+evaluation_backend = "cuda_strict_deterministic"
+inherited_gate = "../artifacts/f16_sequence_int8_recovery_v1/integrity/determinism_gate.json"
+cublas_workspace_config = ":4096:8"
+torch_use_deterministic_algorithms = true
+cudnn_deterministic = true
+cudnn_benchmark = false
+
+# ---------------------------------------------------------------------------
+# Optimization-pathway matrix. Every member already exists as a frozen checkpoint
+# from F12 or F15, so F17 is an evaluation study on a matched block: no new
+# training enters the primary comparison and training-realization variance cannot
+# contaminate it.
+#
+# Technically meaningless permutations are deliberately excluded. There is no
+# "static INT8 -> ordinary FP32 KD" route because the framework cannot train that
+# graph meaningfully.
+# ---------------------------------------------------------------------------
+[pathways.A0]
+label = "Original Policy"
+pathway = "none"
+checkpoint = "../artifacts/f12_belief_ppo_compression_v1/baseline/a0_original_actor.pt"
+width = 256
+precision = "FP32"
+role = "reference"
+
+[pathways.A1]
+label = "Pruning only"
+pathway = "prune"
+checkpoint = "../artifacts/f12_belief_ppo_compression_v1/pruning/p75/actor_pruned_fp32.pt"
+width = 64
+precision = "FP32"
+
+[pathways.A2]
+label = "Pruning then historical C4-focused KD"
+pathway = "prune -> KD(C4-focused)"
+checkpoint = "../artifacts/f12_belief_ppo_compression_v1/prune_distill/pd75/actor_pruned_distilled_fp32.pt"
+width = 64
+precision = "FP32"
+
+[pathways.A3]
+label = "Pruning then balanced C0-C4 KD (anchor)"
+pathway = "prune -> KD(balanced C0-C4)"
+checkpoint = "../artifacts/f15_cross_curriculum_recovery_v1/recovery/fp32/w64/actor_multicurriculum_kd_fp32.pt"
+width = 64
+precision = "FP32"
+is_anchor = true
+
+[pathways.A4]
+label = "PTQ only, no pruning"
+pathway = "PTQ"
+checkpoint = "../artifacts/f12_belief_ppo_compression_v1/quant_only/actor_int8.pt"
+width = 256
+precision = "INT8"
+role = "quantization-only control"
+
+[pathways.A5]
+label = "Pruning then PTQ, no distillation"
+pathway = "prune -> PTQ"
+checkpoint = "../artifacts/f12_belief_ppo_compression_v1/prune_quant/actor_int8.pt"
+width = 64
+precision = "INT8"
+
+[pathways.A6]
+label = "Pruning then balanced KD then PTQ"
+pathway = "prune -> KD(balanced) -> PTQ"
+checkpoint = "../artifacts/f15_cross_curriculum_recovery_v1/recovery/ptq/w64/actor_int8.pt"
+width = 64
+precision = "INT8"
+parent = "A3"
+
+[pathways.A7]
+label = "Historical final INT8 (prune, C4-KD, PTQ, QAT-KD)"
+pathway = "prune -> KD(C4-focused) -> PTQ -> QAT+KD(C4-focused)"
+checkpoint = "../artifacts/f12_belief_ppo_compression_v1/prune_distill_quant_distill/actor_int8.pt"
+width = 64
+precision = "INT8"
+
+[pathways.A8]
+label = "Pruning then balanced KD then balanced QAT+KD"
+pathway = "prune -> KD(balanced) -> QAT+KD(balanced) -> INT8"
+checkpoint = "../artifacts/f15_cross_curriculum_recovery_v1/recovery/qat/w64/actor_int8.pt"
+width = 64
+precision = "INT8"
+parent = "A3"
+
+# ---------------------------------------------------------------------------
+# What each comparison answers. Only matched comparisons are licensed.
+# ---------------------------------------------------------------------------
+[comparisons]
+"A0 vs A1" = "does pruning introduce the first competence collapse (historical anchor)"
+"A1 vs A2" = "how much does historical C4-focused distillation recover"
+"A2 vs A3" = "PRIMARY RECOVERY: does expanding KD rehearsal from C4-focused to balanced C0-C4 improve cross-curriculum recovery"
+"A0 vs A4" = "QUANTIZATION-ONLY CONTROL: what happens when quantization is applied without pruning"
+"A1 vs A5" = "what happens when a pruned, unrecovered actor is quantized"
+"A3 vs A6" = "PRIMARY QUANTIZATION: does PTQ introduce a new PASS->FAIL after a known FP32 recovery, for this exact checkpoint"
+"A5 vs A6" = "PRIMARY METHOD ORDER: does balanced KD BEFORE PTQ preserve more competence than directly quantizing the pruned actor"
+"A6 vs A8" = "can balanced QAT + teacher guidance recover competence lost under quantization"
+"A7 vs A8" = "does balanced rehearsal coverage in the QAT stage outperform the historical C4-focused QAT"
+
+[comparisons.forbidden]
+cross_width_method_order_claims = "A0/A4 are width 256 controls; method-order claims are made only among width-64 members"
+generalizing_beyond_tested_quantization = "the PTQ/QAT procedure is fixed; no claim about other quantization schemes"
+
+# ---------------------------------------------------------------------------
+# Gates. Copied verbatim from the frozen F15/F16 protocol so F17 verdicts remain
+# directly comparable. No threshold may change after results open.
+# ---------------------------------------------------------------------------
+[retention.absolute.c0]
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_invalid_pose_rate = 0.25
+maximum_mean_abs_lateral_error_m = 0.09
+minimum_mean_progress_m = 3.50
+
+[retention.absolute.c1]
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_invalid_pose_rate = 0.25
+maximum_small_loop_completion_drop = 0.25
+
+[retention.absolute.c2]
+maximum_collision_rate = 0.10
+maximum_unsafe_episode_rate = 0.50
+minimum_mean_progress_m = 4.50
+maximum_stationary_fraction = 0.65
+maximum_c1_completion_drop = 0.25
+
+[retention.absolute.c3]
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_restart_rate = 0.50
+maximum_c2_collision_rate_increase = 0.10
+
+[retention.absolute.c4]
+maximum_collision_rate = 0.10
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_mean_progress_m = 4.50
+maximum_unsafe_episode_rate = 0.50
+minimum_restart_rate = 0.50
+minimum_completion_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_stationary_fraction = 0.65
+
+[retention.relative_to_original]
+maximum_new_collisions = 0
+maximum_collision_rate_increase = 0.0
+maximum_unsafe_episode_rate_increase = 0.125
+maximum_stop_violation_rate_increase = 0.125
+maximum_lane_failure_rate_increase = 0.125
+maximum_invalid_pose_rate_increase = 0.125
+maximum_completion_rate_drop = 0.125
+maximum_restart_rate_drop = 0.125
+maximum_mean_progress_drop_m = 0.50
+maximum_minimum_clearance_drop_m = 0.05
+
+[fidelity]
+maximum_v_mae_mps = 0.020
+maximum_v_p95_abs_error_mps = 0.050
+maximum_omega_mae_rad_s = 0.200
+maximum_omega_p95_abs_error_rad_s = 0.500
+maximum_omega_sign_disagreement = 0.050
+minimum_pearson = 0.980
+minimum_spearman = 0.970
+
+[evaluation]
+paired_seeds_per_curriculum = 8
+same_seeds_for_all_pathways = true
+omega_sign_deadband_rad_s = 0.2
+store_public_physical_29d = true
+store_public_normalized_29d = true
+store_privileged_evaluation_separately = true
+failure_window_steps_before = 90
+failure_window_steps_after = 45
+representative_failure_rule = "lowest_seed_then_first_objective_failure_event"
+event_priority = ["collision", "unsafe", "stop_violation", "lane_failure", "invalid_pose", "timeout", "termination_without_completion"]
+
+# Descriptive failure phenotype. Deterministic precedence. Never changes a verdict.
+[failure_phenotype]
+precedence = ["safety_relevant", "behavioural", "marginal_clearance_only"]
+safety_relevant_checks = ["maximum_collision_rate", "new_collisions", "collision_rate", "maximum_stop_violation_rate", "stop_violation_rate", "maximum_unsafe_episode_rate", "unsafe_episode_rate", "minimum_stop_completion_rate", "minimum_restart_rate"]
+behavioural_checks = ["completion_rate", "minimum_completion_rate", "mean_progress_m", "restart_rate", "timeout_rate", "lane_failure_rate", "maximum_lane_failure_rate", "invalid_pose_rate"]
+marginal_checks = ["minimum_clearance", "maximum_minimum_clearance_drop_m"]
+descriptive_only = true
+never_alters_verdict = true
+
+[media]
+capture_during_primary_rollout = true
+rgb_ring_buffer_steps = 136
+reconstruct_by_replay = false
+rerun_actor_inference_for_video = false
+encode_mp4 = true
+encode_gif = true
+encode_contact_sheet = true
+pairing_label = "Same-Seed Primary Rollouts"
+forbidden_label = "causal counterfactual trajectory"
+
+[quantization]
+procedure_fixed = true
+backend = "x86"
+framework = "torch.ao.quantization_eager"
+weight_dtype = "qint8"
+activation_dtype = "quint8"
+weight_granularity = "per_channel_symmetric"
+activation_granularity = "per_tensor_affine"
+mode = "static"
+note = "held fixed; F17 does not test alternative quantization representations"
+
+[selection]
+require_int8 = true
+must_pass = ["c0", "c1", "c2", "c3", "c4", "same_state_fidelity", "safety", "integrity", "provenance"]
+diagnostics_never_affect_eligibility = true
+
+[final_holdout]
+once_only = true
+requires_frozen_final_candidate = true
+open_only_if_eligible_candidate_exists = true
+models = ["Original Policy", "Frozen Final Candidate"]
+replacement_after_access = false
+
+[artifacts]
+directory = "../artifacts/f17_optimization_method_order_v1"

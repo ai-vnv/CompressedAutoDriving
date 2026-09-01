@@ -1,0 +1,39 @@
+schema_version = 1
+extends = "f10_ppo_visual_v8.toml"
+extends_sha256 = "d28cdb3b49cb6a435fc5f51089e6f3cd6a1371d88ebfc573a89d86d6318ac8aa"
+experiment = "F10-PPO camera-lane competence C0-C1 remediation v9"
+
+[provenance]
+lane_belief_config = "lane_belief_v8_competence_rgb.toml"
+lane_belief_config_sha256 = "62b0166f99aba53143f13256fd369771752154d4b1d718e3c03c1697e90ae277"
+formulation_doc = "../docs/F10_PPO_C0_C1_REMEDIATION_V9.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 83999],
+  [85000, 85999],
+  [92000, 93999],
+  [100000, 106999],
+]
+
+[wandb]
+group = "f10-ppo-visual-v9-camera-lane-competence"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_v9"
+
+[protocol_scope]
+maximum_stage = "c1"
+
+[v9_remediation]
+camera_lane_model = "mobilenet_v3_small_lane_pose_competence_v1"
+camera_lane_checkpoint_sha256 = "91d471d5ccf9875012d564fa8937838fd0f95e6e3e6aabaefcad654d9b4bb84f"
+crop_top_fraction = 0.25
+horizontal_flip_probability = 0.0
+real_turn_balancing = true
+recovery_lateral_limit_m = 0.09
+recovery_heading_limit_rad = 0.35
+retrain_c0_from_random_initialization = true
+ppo_hyperparameters_changed = false
+reward_changed = false
+action_changed = false

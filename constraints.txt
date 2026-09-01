@@ -1,0 +1,5 @@
+# Pin the existing simulator compatibility envelope before adding YOLO.
+numpy<2
+gym<0.27
+pyglet<2
+

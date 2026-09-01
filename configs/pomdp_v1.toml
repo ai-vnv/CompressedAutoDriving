@@ -1,0 +1,17 @@
+[pomdp]
+discount_factor = 0.99
+action_config = "action_v1.toml"
+
+[scope]
+front_camera = true
+side_cameras = false
+maximum_relevant_pedestrians = 1
+stop_signs = 1
+reverse_driving = false
+end_to_end_rgb_policy = false
+
+[coordinates]
+ego_x_axis = "left_positive"
+ego_y_axis = "forward_positive"
+bearing_sign = "left_positive"
+yaw_rate_sign = "counter_clockwise_positive"

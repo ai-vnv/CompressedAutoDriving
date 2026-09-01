@@ -1,0 +1,28 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v22_source.toml"
+extends_sha256 = "adc1af11d72863c805f03e84517399dce0d0463c9db5bd3e797b535b6fcf039a"
+experiment = "F10-PPO C4 cumulative retention source v23"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V23_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 157999],
+  [161000, 161999],
+  [164000, 167999],
+  [169000, 170999],
+]
+
+[curriculum.c4]
+training_steps = 4096
+checkpoint_interval_steps = 1024
+training_seeds = [171001,171002,171003,171004,171005,171006,171007,171008,171009,171010,171011,171012]
+development_seeds = [171101,171102,171103,171104]
+stage_final_seeds = [171201,171202,171203,171204]
+
+[wandb]
+group = "f10-ppo-visual-objects-v23-c4-cumulative"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v23"

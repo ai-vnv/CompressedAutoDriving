@@ -1,0 +1,34 @@
+[scenario]
+name = "experiment_loop_stop_only_v2"
+map = "../maps/experiment_loop_stop_v2.yaml"
+seed = 123
+
+[ego]
+# Same counter-clockwise visual route and world geometry as V15.  The map-only
+# change is the physical roadside placement of the sign.
+start_tile = [3, 3]
+start_pose_m = [0.3144, 0.0, 0.3144]
+heading_rad = 0.7853981633974483
+
+[stop_sign]
+enabled = true
+object_kind = "sign_stop"
+
+[stop_line]
+enabled = true
+world_x_m = 2.1645
+world_z_m = 1.4625
+route_heading_rad = 1.5707963267948966
+
+[pedestrian]
+enabled = true
+object_kind = "duckie"
+mode = "stationary"
+speed_mps = 0.0
+crossing_distance_m = 0.749
+path_start_world_x_m = 1.4625
+path_start_world_z_m = 1.7900
+path_end_world_x_m = 1.4625
+path_end_world_z_m = 2.5390
+start_delay_s = 0.50
+reverse_start_delay_s = 1.55

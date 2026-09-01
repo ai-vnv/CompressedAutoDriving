@@ -1,0 +1,184 @@
+schema_version = 1
+
+[provenance]
+checkpoint = "../artifacts/yolo_v1/best.pt"
+checkpoint_sha256 = "3d4f816d440690493b856d25403a84a3249e4250599319c32569b97cb8d7482c"
+detector_dataset_manifest = "../artifacts/detection_dataset_v1_manifest.json"
+scenario = "scenario_pomdp_v1.toml"
+annotation_rules = "detection_dataset_v1.toml"
+frozen_f7_config = "oracle_ekf_v1.toml"
+
+[split]
+calibration_seeds = [4101, 4102, 4103, 4104]
+final_evaluation_seeds = [5101, 5102, 5103, 5104]
+
+[detector]
+confidence_threshold = 0.10
+nms_iou_threshold = 0.70
+image_size = 480
+device = 0
+max_detections = 300
+runtime_selection = "highest_confidence_then_bbox_lexicographic"
+
+[simulator]
+image_width_px = 640
+image_height_px = 480
+domain_randomization = true
+dynamics_randomization = false
+calibration_capture_every_steps = 2
+negative_capture_every_steps = 4
+
+[trajectory_perturbation]
+start_x_range_m = [0.02, 0.16]
+lateral_offset_range_m = [-0.04, 0.04]
+heading_range_rad = [-0.05, 0.05]
+
+[[scenario_matrix]]
+name = "stationary_ped_stationary_ego"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 72
+
+[[scenario_matrix]]
+name = "stationary_ped_moving_ego"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.0
+steps = 72
+
+[[scenario_matrix]]
+name = "stationary_ped_turning_ego"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 1.0
+steps = 55
+
+[[scenario_matrix]]
+name = "cross_left_to_right"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 130
+
+[[scenario_matrix]]
+name = "cross_right_to_left"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 130
+
+[[scenario_matrix]]
+name = "crossing_moving_turning_ego"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.15
+angular_velocity_rad_s = 0.35
+steps = 78
+
+# Calibration-only placements close the near/medium support gap found by the
+# first pre-freeze audit. They never enter the final belief evaluation.
+[[scenario_matrix]]
+name = "calibration_near_stationary"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 40
+ego_start_x_offset_m = 0.50
+use_for_final_evaluation = false
+
+[[scenario_matrix]]
+name = "calibration_medium_stationary"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 40
+ego_start_x_offset_m = 0.25
+use_for_final_evaluation = false
+
+[calibration_protocol]
+matching_iou_threshold = 0.50
+minimum_samples_per_range_bin = 30
+heteroscedastic_sigma_ratio_threshold = 1.50
+detection_beta_prior_alpha = 0.50
+detection_beta_prior_beta = 0.50
+distance_bin_near_max_m = 0.55
+distance_bin_medium_max_m = 0.80
+
+[measurement_model]
+# Frozen from calibration-only seeds 4101--4104 before any 5101-series
+# final-evaluation trajectory was rendered.
+parameters_frozen = true
+calibration_artifact = "../artifacts/f9_measurement_model.json"
+calibration_artifact_sha256 = "eb09ea6c64b6cbf3306057092e254a0e049776b38581e5b873a8ef9e2e91b278"
+range_semantics = "object_origin"
+runtime_range = "raw_yolo_projection"
+bias_correction = "global_additive"
+range_bias_m = -0.045904804710162034
+bearing_bias_rad = 0.00414567890700929
+gaussian_assumption = "provisional_imperfect_for_yolo_range"
+
+[range]
+semantics = "object_origin"
+
+[range_noise]
+model = "distance_bins"
+
+[range_noise.near]
+min_m = 0.0
+max_m = 0.55
+residual_bias_m = 0.0
+sigma_m = 0.003047553825257025
+
+[range_noise.medium]
+min_m = 0.55
+max_m = 0.80
+residual_bias_m = 0.0
+sigma_m = 0.012491135642519849
+
+[range_noise.far]
+min_m = 0.80
+max_m = inf
+residual_bias_m = 0.0
+sigma_m = 0.01606193180500766
+
+[bearing]
+residual_bias_rad = 0.0
+sigma_rad = 0.012647917882523984
+
+[covariance]
+structure = "diagonal"
+use_off_diagonal = false
+
+[ekf]
+# Frozen F7 values; F9 may only replace the observation model.
+position_process_std_m_per_sqrt_s = 0.001
+velocity_process_std_mps_per_sqrt_s = 0.005
+initial_velocity_std_mps = 0.35
+minimum_range_m = 0.001
+covariance_floor = 1.0e-12
+clean_range_sigma_m = 1.0e-5
+clean_bearing_sigma_rad = 1.0e-5
+
+[existence]
+# P_D/P_FA use the calibration-only Beta-posterior estimates. The algorithm
+# and all remaining F7 existence parameters stay frozen.
+prior_probability = 0.50
+detection_probability = 0.9766775777414075
+false_positive_probability = 0.00078003120124805
+survival_probability = 0.995
+birth_probability = 0.005
+
+[evaluation]
+active_belief_probability_threshold = 0.50
+chi_square_2d_95_threshold = 5.991464547107979
+error_cases_per_category = 4
+
+[artifacts]
+calibration_csv = "../artifacts/f9_yolo_measurement_calibration.csv"
+calibration_model_json = "../artifacts/f9_measurement_model.json"
+validation_csv = "../artifacts/f9_yolo_ekf_validation.csv"
+belief_metrics_json = "../artifacts/f9_belief_metrics.json"
+nis_metrics_json = "../artifacts/f9_nis_metrics.json"
+error_case_dir = "../artifacts/f9_error_cases"
+calibration_log = "../artifacts/f9_calibration.log"
+validation_log = "../artifacts/f9_validation.log"

@@ -1,0 +1,21 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v21.toml"
+extends_sha256 = "70f4098fa5785ac8723217016f685f2e1fa490e1b181d519eb9d40803fd328ef"
+experiment = "F10-PPO C4 calibrated Duckie image-domain source v22"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V22_FORMULATION.md"
+
+[runtime_detection]
+duckie_minimum_confidence = 0.40
+# Frozen from F9 calibration (1,193 true Duckie boxes, max bottom 232.31)
+# and the training-only C4 audit (75 visible rows, max 232.42; 51/52
+# absent-object yellow-line rows start at 253.04; the remaining boundary row
+# still contains the exiting Duckie in the rendered frame).
+duckie_maximum_bottom_y_px = 240.0
+
+[wandb]
+group = "f10-ppo-visual-objects-v22-c4-dagger"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v22"

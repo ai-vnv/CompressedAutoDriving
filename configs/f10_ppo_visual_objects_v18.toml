@@ -1,0 +1,55 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v17.toml"
+extends_sha256 = "71e1b3b2c4e53c0dd0941ee38b6f66c4d97ca779ec1947f16f94f70e0d52a397"
+experiment = "F10-PPO C3 public-belief DAgger correction v18"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V18_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 157999],
+  [161000, 161999],
+  [164000, 165999],
+]
+
+[curriculum.c3]
+training_seeds = [166001,166002,166003,166004,166005,166006,166007,166008,166009,166010,166011,166012]
+development_seeds = [166101,166102,166103,166104]
+stage_final_seeds = [166201,166202,166203,166204]
+
+[behavior_warm_start.c3]
+enabled = true
+dagger = true
+balanced_c2_retention = true
+dataset = "../artifacts/f10_ppo_visual_objects_v18/c3/behavior/behavior_warm_start.npz"
+dataset_sha256 = "f242b37431c18a02d96102f944adba9227d4a2a8f5c29eb823173b7a672f9c5a"
+manifest = "../artifacts/f10_ppo_visual_objects_v18/c3/behavior/behavior_warm_start_manifest.json"
+manifest_sha256 = "4f731b7159595b8ba5b6b040d825476bb0c8b287f65a8eb0b6b6a7c7925a46d8"
+source_csv = "../artifacts/f10_ppo_visual_objects_v18/c3/behavior/behavior_warm_start_source.csv"
+source_csv_sha256 = "7915032a3d5aa763d12bfe374fe43733aabf4339dd993f8a355e8699adf8a9d8"
+source_protocol = "f10_ppo_visual_objects_v17.toml"
+source_protocol_sha256 = "71e1b3b2c4e53c0dd0941ee38b6f66c4d97ca779ec1947f16f94f70e0d52a397"
+source_checkpoint_sha256 = "e997f9bd4b1e0f86e622faead6617ad6cf42cb7b6182309544202172f3700042"
+learner_checkpoint = "../artifacts/f10_ppo_visual_objects_v17/c3/training/checkpoints/ppo_c3_step_0000000.pt"
+learner_checkpoint_sha256 = "908e3f936931e51d64e6228f12b48a635c241e7186591c9faa9229ea74903f3a"
+anchor_dataset_sha256 = "026b1ef32195e2fca4c210563f92cabaf3b220958d1b5b2eb55b48c6498e23a2"
+epochs = 30
+batch_size = 512
+learning_rate = 0.001
+seed = 67000
+
+[behavior_warm_start.c3.gate]
+maximum_c2_completion_drop = 0.25
+minimum_completion_rate = 0.50
+minimum_mean_progress_m = 3.0
+minimum_stop_completion_rate = 0.50
+minimum_restart_rate = 0.50
+maximum_lane_failure_rate = 0.25
+maximum_stationary_fraction = 0.50
+
+[wandb]
+group = "f10-ppo-visual-objects-v18-c3-dagger"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v18"

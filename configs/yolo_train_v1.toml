@@ -1,0 +1,46 @@
+[model]
+architecture = "yolo11n.pt"
+pretrained = true
+
+[training]
+dataset_yaml = "datasets/duckietown_detection_v1/dataset.yaml"
+project_dir = "artifacts/yolo_v1/runs"
+run_name = "baseline"
+epochs = 40
+image_size = 480
+batch_size = 8
+device = 0
+workers = 2
+seed = 8123
+patience = 10
+deterministic = true
+optimizer = "auto"
+learning_rate = 0.01
+weight_decay = 0.0005
+cache = false
+
+[augmentation]
+hsv_h = 0.01
+hsv_s = 0.30
+hsv_v = 0.20
+degrees = 2.0
+translate = 0.05
+scale = 0.10
+shear = 0.0
+perspective = 0.0
+flip_up_down = 0.0
+flip_left_right = 0.0
+mosaic = 0.20
+mixup = 0.0
+copy_paste = 0.0
+close_mosaic = 5
+
+[validation]
+confidence_threshold = 0.001
+iou_threshold = 0.70
+
+[readiness_sanity]
+confidence_threshold = 0.10
+iou_threshold = 0.70
+max_images_per_class = 8
+

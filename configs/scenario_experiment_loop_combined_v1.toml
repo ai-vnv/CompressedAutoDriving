@@ -1,0 +1,40 @@
+[scenario]
+name = "experiment_loop_combined_v1"
+map = "../maps/experiment_loop_stop_v2.yaml"
+seed = 123
+
+[ego]
+# Counter-clockwise entry used by C2.  The ego first encounters the Duckie
+# crossing on the eastbound straight and later reaches the independent stop
+# line/sign on the northbound straight within the same lap.
+start_tile = [1, 3]
+start_pose_m = [0.2706, 0.0, 0.3144]
+heading_rad = -0.7853981633974483
+
+[stop_sign]
+enabled = true
+object_kind = "sign_stop"
+
+[stop_line]
+enabled = true
+world_x_m = 2.1645
+world_z_m = 1.4625
+route_heading_rad = 1.5707963267948966
+
+[pedestrian]
+enabled = true
+object_kind = "duckie"
+mode = "cross_left_to_right"
+speed_mps = 0.20
+crossing_distance_m = 0.749
+path_start_world_x_m = 1.4625
+path_start_world_z_m = 1.7900
+path_end_world_x_m = 1.4625
+path_end_world_z_m = 2.5390
+# C4 is a single encounter: synchronize each direction with the approaching
+# counter-clockwise ego, then remove the Duckie after it reaches the far side.
+# This prevents Gym-Duckietown's native eight-second automatic return crossing
+# from creating an endless artificial road block.
+start_delay_s = 11.35
+reverse_start_delay_s = 13.20
+repeat_crossing = false

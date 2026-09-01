@@ -1,0 +1,26 @@
+[scenario]
+name = "pomdp_v1"
+map = "../maps/pomdp_v1.yaml"
+seed = 123
+
+[ego]
+start_tile = [1, 4]
+start_pose_m = [0.065, 0.0, 0.4095]
+heading_rad = 0.0
+
+[stop_sign]
+enabled = true
+object_kind = "sign_stop"
+
+[stop_line]
+enabled = true
+world_x_m = 1.170
+world_z_m = 2.7495
+route_heading_rad = 0.0
+
+[pedestrian]
+enabled = true
+object_kind = "duckie"
+mode = "cross_left_to_right"
+speed_mps = 0.20
+crossing_distance_m = 0.80

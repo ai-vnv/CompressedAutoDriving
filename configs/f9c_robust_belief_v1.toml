@@ -1,0 +1,310 @@
+schema_version = 1
+
+[provenance]
+checkpoint = "../artifacts/yolo_v1/best.pt"
+checkpoint_sha256 = "3d4f816d440690493b856d25403a84a3249e4250599319c32569b97cb8d7482c"
+detector_dataset_manifest = "../artifacts/detection_dataset_v1_manifest.json"
+scenario = "scenario_pomdp_v1.toml"
+annotation_rules = "detection_dataset_v1.toml"
+frozen_f7_config = "oracle_ekf_v1.toml"
+
+[split]
+calibration_seeds = [6101, 6102, 6103, 6104, 6105, 6106, 6107, 6108]
+final_evaluation_seeds = [7101, 7102, 7103, 7104]
+forbidden_seeds = [1101, 1102, 1103, 1104, 1105, 1106, 2101, 2102, 3101, 3102, 4101, 4102, 4103, 4104, 5101, 5102, 5103, 5104]
+
+[detector]
+confidence_threshold = 0.10
+nms_iou_threshold = 0.70
+image_size = 480
+device = 0
+max_detections = 300
+runtime_selection = "highest_confidence_then_bbox_lexicographic"
+
+[simulator]
+image_width_px = 640
+image_height_px = 480
+domain_randomization = true
+dynamics_randomization = false
+calibration_capture_every_steps = 2
+negative_capture_every_steps = 4
+
+[trajectory_perturbation]
+start_x_range_m = [0.02, 0.16]
+lateral_offset_range_m = [-0.04, 0.04]
+heading_range_rad = [-0.05, 0.05]
+
+[[scenario_matrix]]
+name = "stationary_ped_stationary_ego"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 72
+
+[[scenario_matrix]]
+name = "stationary_ped_moving_ego"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.0
+steps = 72
+
+[[scenario_matrix]]
+name = "stationary_ped_turning_ego"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 1.0
+steps = 55
+
+[[scenario_matrix]]
+name = "cross_left_to_right"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 130
+
+[[scenario_matrix]]
+name = "cross_right_to_left"
+pedestrian_mode = "cross_right_to_left"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 130
+
+[[scenario_matrix]]
+name = "crossing_moving_turning_ego"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.15
+angular_velocity_rad_s = 0.35
+steps = 78
+
+# Near-range placements close the F9b support gap: F9b's near-range frames
+# existed only in calibration-only scenarios, giving the final belief
+# evaluation N=0 near. These scenarios are usable by both calibration and
+# final evaluation so near-range evidence exists on both sides of the split.
+[[scenario_matrix]]
+name = "approach_near_stationary_ego"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 60
+ego_start_x_offset_m = 0.50
+use_for_calibration = true
+use_for_final_evaluation = true
+
+[[scenario_matrix]]
+name = "approach_medium_stationary_ego"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 60
+ego_start_x_offset_m = 0.25
+use_for_calibration = true
+use_for_final_evaluation = true
+
+[[scenario_matrix]]
+name = "approach_near_moving_ego"
+pedestrian_mode = "stationary"
+linear_velocity_mps = 0.20
+angular_velocity_rad_s = 0.0
+# Task 9 fix round 1: steps was 90. Seed 6102's randomized start/heading
+# perturbation drove the ego off-road ("invalid-pose") at frame 64/90 on
+# the first full calibration run. Shortened with margin below that crash
+# frame rather than touching ego_start_x_offset_m, which Task 2's ruling
+# deliberately set at 0.30 so this scenario traverses (not just starts) in
+# near range. The near-range frame surplus (1017 across 8 calibration
+# seeds, ~5x the scaled final-evaluation minimum) makes this safe. Verified
+# by re-rendering only this scenario across all 8 calibration seeds with
+# zero early terminations before the final calibration re-run (see
+# task-9-report.md, fix round 1).
+steps = 55
+ego_start_x_offset_m = 0.30
+use_for_calibration = true
+use_for_final_evaluation = true
+
+[[scenario_matrix]]
+name = "cross_near_left_to_right"
+pedestrian_mode = "cross_left_to_right"
+linear_velocity_mps = 0.0
+angular_velocity_rad_s = 0.0
+steps = 110
+ego_start_x_offset_m = 0.40
+use_for_calibration = true
+use_for_final_evaluation = true
+
+[calibration_protocol]
+matching_iou_threshold = 0.50
+minimum_samples_per_range_bin = 30
+heteroscedastic_sigma_ratio_threshold = 1.50
+detection_beta_prior_alpha = 0.50
+detection_beta_prior_beta = 0.50
+distance_bin_near_max_m = 0.55
+distance_bin_medium_max_m = 0.80
+
+[robust_observation]
+bias_refit = true
+innovation_gate = true
+temporal_association = true
+covariance_calibration = true
+conditional_detection = true
+
+[innovation_gate]
+# Hard reject only in F9c v1. A soft-downweight variant would make the
+# correction use 25*lambda*R while association and the gate used lambda*R,
+# breaking invariant I1. See "Why there is no downweight mode".
+mode = "hard_reject"
+chi_square_threshold = 9.21034037197618   # 2 DOF, 99%
+# Invariant I2: a gated-out bbox suppresses the EKF correction only. Existence
+# evidence comes from the detector, never from the gate decision.
+existence_evidence_source = "detector"
+
+[association]
+rule = "minimum_nis"
+# DELIBERATELY LOOSER than [innovation_gate].chi_square_threshold. The two
+# answer different questions: association asks "which candidate is plausibly
+# the track?" and should reject only wild outliers, while the gate asks "do I
+# trust these coordinates enough to correct with them?" and is the actual
+# accept/reject decision. Setting them equal makes the gate unreachable
+# whenever temporal_association is on -- association filters first, so every
+# surviving candidate trivially passes the gate, and the innovation_gate
+# ablation switch has no observable effect.
+chi_square_gate = 13.815510557964274   # 2 DOF, 99.9%
+initialization_rule = "highest_confidence_then_bbox_lexicographic"
+
+[covariance_calibration]
+# Filled by experiments/calibrate_f9c_robust_belief.py, then frozen.
+# Frozen by Task 10 from artifacts/f9c_calibration_metrics.json
+# (covariance_scales.lambda_r/lambda_beta, variance_components.*.sigma_floor_*),
+# the final calibration re-run (see task-9-report.md, "Final internally-consistent
+# calibration re-run"). config_sha256 recorded in artifacts/f9c_frozen_config.json.
+parameters_frozen = true
+range_scale = 9.96243043243885
+bearing_scale = 1.0
+range_posterior_floor_m = 0.02041790926900693
+bearing_posterior_floor_rad = 0.012546331734068323
+
+[measurement_model]
+# F9c-fitted bias, used when robust_observation.bias_refit = true.
+# Frozen by Task 10 from artifacts/f9c_calibration_metrics.json (bias.fit),
+# the final calibration re-run (see task-9-report.md).
+parameters_frozen = true
+bias_model = "global_additive"   # LOSO rule in Task 9 selected global_additive over per_range_bin
+range_bias_m = -0.02986607430110723
+bearing_bias_rad = 0.0012336629252072933
+
+[baseline_measurement_model]
+# F9b frozen bias. This is Baseline A's correction and is also what every
+# ablation row with bias_refit = false uses. Never refit; copied verbatim from
+# configs/f9_yolo_ekf_v1.toml so "all switches off == Baseline A" holds by
+# construction rather than by coincidence.
+bias_model = "global_additive"
+range_bias_m = -0.045904804710162034
+bearing_bias_rad = 0.00414567890700929
+
+[conditional_detection]
+# Filled by calibration; keys are predicted-observability classes.
+# Frozen by Task 10 from artifacts/f9c_calibration_metrics.json
+# (effective_detection.detection_probability_*), the final calibration
+# re-run (see task-9-report.md).
+parameters_frozen = true
+detection_probability_center = 0.9490486257928118
+detection_probability_mid_fov = 0.9801336146272855
+detection_probability_edge_fov = 0.997211155378486
+# Invariant I3: this value is a reported diagnostic only. It is never applied to
+# a miss, because an outside-domain absence carries no likelihood.
+detection_probability_outside_domain = 0.5586734693877551
+outside_domain_miss_policy = "prediction_only"
+false_positive_probability = 0.00078003120124805
+# Invariant I8 (Task 9 fix round 1). Filled by calibration:
+# LR_floor = LR_nominal ** (1 / L_mean), both measured on calibration-only
+# data -- never hand-picked, never tuned to hit a retention target.
+# Frozen by Task 10 from artifacts/f9c_calibration_metrics.json
+# (miss_likelihood_floor.adjusted_using_frozen_f9b_false_positive_rate.lr_floor
+# == recommended_conditional_detection_miss_likelihood_floor), the final
+# calibration re-run (see task-9-report.md).
+miss_likelihood_floor = 0.37362469458201386
+
+[existence_track]
+active_threshold = 0.50
+delete_threshold = 0.05
+initialization_threshold = 0.50
+
+[range]
+semantics = "object_origin"
+
+[range_noise]
+model = "distance_bins"
+
+[range_noise.near]
+min_m = 0.0
+max_m = 0.55
+residual_bias_m = 0.0
+sigma_m = 0.003047553825257025
+
+[range_noise.medium]
+min_m = 0.55
+max_m = 0.80
+residual_bias_m = 0.0
+sigma_m = 0.012491135642519849
+
+[range_noise.far]
+min_m = 0.80
+max_m = inf
+residual_bias_m = 0.0
+sigma_m = 0.01606193180500766
+
+[bearing]
+residual_bias_rad = 0.0
+sigma_rad = 0.012647917882523984
+
+[covariance]
+structure = "diagonal"
+use_off_diagonal = false
+
+[ekf]
+# Frozen F7 values; F9c may only replace the observation model.
+position_process_std_m_per_sqrt_s = 0.001
+velocity_process_std_mps_per_sqrt_s = 0.005
+initial_velocity_std_mps = 0.35
+minimum_range_m = 0.001
+covariance_floor = 1.0e-12
+clean_range_sigma_m = 1.0e-5
+clean_bearing_sigma_rad = 1.0e-5
+
+[existence]
+# P_D/P_FA use the calibration-only Beta-posterior estimates. The algorithm
+# and all remaining F7 existence parameters stay frozen. F9c deliberately
+# does NOT validate detection_probability against the frozen F7 config --
+# unlike prior_probability/survival_probability/birth_probability, that
+# parameter is intentionally unfrozen for F9c's conditional-detection work.
+prior_probability = 0.50
+detection_probability = 0.9766775777414075
+false_positive_probability = 0.00078003120124805
+survival_probability = 0.995
+birth_probability = 0.005
+
+[acceptance]
+coverage_68_low = 0.60
+coverage_68_high = 0.76
+coverage_95_low = 0.90
+coverage_95_high = 0.98
+max_std_over_rmse = 1.5
+max_rmse_ratio_vs_baseline = 1.15
+
+[minimum_support]
+near = 100
+medium = 200
+far = 200
+edge_fov = 50
+
+[artifacts]
+calibration_csv = "../artifacts/f9c_calibration.csv"
+calibration_metrics_json = "../artifacts/f9c_calibration_metrics.json"
+frozen_config_json = "../artifacts/f9c_frozen_config.json"
+validation_csv = "../artifacts/f9c_validation.csv"
+belief_metrics_json = "../artifacts/f9c_belief_metrics.json"
+ablation_metrics_json = "../artifacts/f9c_ablation_metrics.json"
+nis_metrics_json = "../artifacts/f9c_nis_metrics.json"
+error_case_dir = "../artifacts/f9c_error_cases"
+runtime_cache = "../artifacts/f9c_runtime_cache.npz"
+evaluation_truth = "../artifacts/f9c_evaluation_truth.npz"
+calibration_log = "../artifacts/f9c_calibration.log"
+validation_log = "../artifacts/f9c_validation.log"

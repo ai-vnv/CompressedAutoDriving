@@ -1,0 +1,33 @@
+schema_version = 1
+experiment = "camera-only lane pose MobileNetV3-small v1"
+dataset = "../datasets/lane_rgb_v1"
+output = "../artifacts/f10_ppo_visual_v7/lane_rgb_model"
+
+[model]
+architecture = "mobilenet_v3_small_lane_pose_v1"
+pretrained_weights = "/home/pannntastic/.cache/torch/hub/checkpoints/mobilenet_v3_small-047dcff4.pth"
+image_size_px = 224
+target_scales = [0.12, 0.70, 15.0]
+
+[training]
+seed = 8127
+epochs = 30
+batch_size = 32
+learning_rate = 0.0001
+weight_decay = 0.0001
+smooth_l1_beta = 0.20
+device = "cuda"
+horizontal_flip_probability = 0.50
+brightness_jitter = 0.15
+contrast_jitter = 0.15
+saturation_jitter = 0.10
+
+[selection]
+maximum_lateral_rmse_m = 0.050
+maximum_heading_rmse_rad = 0.180
+minimum_heading_sign_accuracy = 0.80
+maximum_curvature_rmse_inv_m = 5.0
+score_lateral_scale_m = 0.050
+score_heading_scale_rad = 0.180
+score_curvature_scale_inv_m = 5.0
+score_curvature_weight = 0.25

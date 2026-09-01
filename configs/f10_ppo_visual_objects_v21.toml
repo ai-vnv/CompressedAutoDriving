@@ -1,0 +1,95 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v20.toml"
+extends_sha256 = "290f3da117d18ad5bdd913d304e3eb1322d6e7d46a8964ca36a54713abf77959"
+experiment = "F10-PPO C4 combined pedestrian and stop v21"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V21_FORMULATION.md"
+
+[protocol_scope]
+maximum_stage = "c4"
+
+[runtime_detection]
+# Frozen before C4 final evaluation. F9 calibration-only data contains 1,193
+# correct Duckie selections (minimum confidence 0.4207) and three incorrect
+# selections (maximum confidence 0.2351). A 0.40 boundary preserves all those
+# correct calibration detections while suppressing the proven yellow-dash
+# false positives. Stop-sign detections retain the frozen 0.10 YOLO threshold.
+duckie_minimum_confidence = 0.40
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 157999],
+  [161000, 161999],
+  [164000, 167999],
+]
+
+[curriculum.c4]
+name = "experiment_loop_combined"
+map = "experiment_loop"
+scenario_config = "scenario_experiment_loop_combined_v1.toml"
+pedestrian_active = true
+stop_active = true
+domain_randomization = false
+pedestrian_modes = ["cross_left_to_right", "cross_right_to_left"]
+episode_horizon_steps = 4200
+training_steps = 8192
+checkpoint_interval_steps = 1024
+training_seeds = [169001,169002,169003,169004,169005,169006,169007,169008,169009,169010,169011,169012]
+development_seeds = [169101,169102,169103,169104]
+stage_final_seeds = [169201,169202,169203,169204]
+
+[curriculum_transition.c4]
+reset_optimizer = true
+reset_log_std = -3.0
+
+# C3 distillation is already frozen inside the selected passing V20
+# checkpoint.  C4 does not rerun or consume the old C3 behavior dataset.
+[behavior_warm_start.c3]
+enabled = false
+
+[curriculum_import.c3]
+source_protocol = "f10_ppo_visual_objects_v20.toml"
+source_protocol_sha256 = "290f3da117d18ad5bdd913d304e3eb1322d6e7d46a8964ca36a54713abf77959"
+artifact_root = "../artifacts/f10_ppo_visual_objects_v20"
+selected_checkpoint = "../artifacts/f10_ppo_visual_objects_v20/c3/ppo_selected.pt"
+selected_checkpoint_sha256 = "ef30983c4599b7654ec8a506849ae9fe60c9d71b0cc7e3b2bda2f61182f4918a"
+
+[ppo_stage_overrides.c4]
+learning_rate = 0.00001
+n_epochs = 2
+clip_range = 0.05
+entropy_coefficient = 0.0
+max_gradient_norm = 0.1
+target_kl = 0.01
+
+[checkpoint_selection.minimum_updated_global_step]
+c4 = 1024
+
+[acceptance.c4]
+maximum_collision_rate = 0.10
+maximum_unsafe_episode_rate = 0.50
+minimum_stop_completion_rate = 0.50
+maximum_stop_violation_rate = 0.25
+minimum_restart_rate = 0.50
+minimum_completion_rate = 0.50
+minimum_mean_progress_m = 4.50
+maximum_lane_failure_rate = 0.25
+maximum_stationary_fraction = 0.65
+
+[acceptance.c4_retention]
+minimum_c0_completion_rate = 0.50
+maximum_c0_lane_failure_rate = 0.25
+minimum_c1_completion_rate = 0.25
+maximum_c1_lane_failure_rate = 0.75
+maximum_c2_collision_rate = 0.10
+minimum_c2_mean_progress_m = 4.50
+minimum_c3_stop_completion_rate = 0.50
+maximum_c3_stop_violation_rate = 0.25
+minimum_c3_restart_rate = 0.50
+
+[wandb]
+group = "f10-ppo-visual-objects-v21-c4-combined"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v21"

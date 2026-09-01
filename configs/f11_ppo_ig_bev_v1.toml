@@ -1,0 +1,34 @@
+schema_version = 1
+experiment = "F11 PPO Integrated Gradients BEV v1"
+method = "integrated_gradients_bev"
+
+[frozen_explanation]
+config = "f11_ppo_integrated_gradients_v1.toml"
+config_sha256 = "225c6b1a0a08f70affb1e856c250a6b44c17f3cfdf5a1a2785d03c0ee1ae7da2"
+trajectory = "../artifacts/f11_ppo_integrated_gradients_v1/policy_trajectory.npz"
+trajectory_sha256 = "a6b3650b90d1b2dcf952d66fed5facd128c803a72780a6e767df23a340c0e204"
+integrated_gradients = "../artifacts/f11_ppo_integrated_gradients_v1/integrated_gradients.npz"
+integrated_gradients_sha256 = "9f89e7f1221d00da6749665ab49c9d667fc13543aa78d8fe4eb3f8769b71e6c6"
+
+[replay]
+seed = 176001
+seed_role = "explanation_only"
+stage = "c4"
+maximum_observation_error = 1.0e-6
+maximum_action_error = 1.0e-6
+pose_source = "evaluation_only_privileged_world_pose_after_action_selection"
+pose_enters_policy_or_ig = false
+
+[plot]
+targets = ["v_cmd_mps", "omega_cmd_rad_s"]
+signed_colour_quantile = 0.99
+png_dpi = 300
+invert_world_z_axis = true
+show_lane_centerline = true
+show_duckie_crossing = true
+show_stop_line = true
+show_stop_sign = true
+
+[artifacts]
+directory = "../artifacts/f11_ppo_integrated_gradients_v1/bev"
+

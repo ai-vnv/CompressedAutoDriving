@@ -1,0 +1,51 @@
+schema_version = 1
+
+[range]
+semantics = "object_origin"
+calibration_type = "linear"
+scale = 0.9507847585432267
+offset_m = 0.05181745469768865
+fit_episodes = ["calibration_approach", "turn_left", "pedestrian_crossing"]
+validation_episodes = ["straight_approach", "turn_right"]
+
+[range_noise]
+model = "distance_bins"
+fit_bin_basis = "held_out_gt_object_origin_range_m"
+runtime_lookup_basis = "calibrated_range_m"
+global_residual_bias_m = 0.00036168519518285327
+global_sigma_m = 0.0060145542190311275
+
+[range_noise.near]
+min_m = 0.0
+max_m = 0.55
+sample_count = 6
+residual_bias_m = 0.0072815236090881625
+sigma_m = 0.004355282699918735
+
+[range_noise.medium]
+min_m = 0.55
+max_m = 0.80
+sample_count = 26
+residual_bias_m = -0.0017042454452778633
+sigma_m = 0.005557385187391544
+
+[range_noise.far]
+min_m = 0.80
+max_m = inf
+sample_count = 20
+residual_bias_m = 0.0009714435036101921
+sigma_m = 0.0054880319763605185
+
+[bearing]
+calibration_type = "identity"
+correction_rad = 0.0
+noise_model = "global"
+residual_bias_rad = 0.0022111395970062673
+sigma_rad = 0.012261346712843327
+
+[covariance]
+structure = "diagonal"
+use_off_diagonal = false
+empirical_range_bearing_correlation = -0.17208954482033306
+empirical_covariance_m_rad = -1.2691007571861655e-05
+rationale = "Held-out correlation is modest and the bearing residual is non-Gaussian/FOV-confounded; retain a diagonal Version-1 model."

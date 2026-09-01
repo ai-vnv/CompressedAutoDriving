@@ -1,0 +1,43 @@
+schema_version = 1
+name = "visual_lane_belief_v8_competence_mobilenet_rgb"
+range_semantics = "signed lane-centre error inferred from front RGB"
+
+[lane_rgb_model]
+enabled = true
+architecture = "mobilenet_v3_small_lane_pose_v1"
+checkpoint = "../artifacts/f10_ppo_visual_v9/lane_rgb_model/best.pt"
+checkpoint_sha256 = "91d471d5ccf9875012d564fa8937838fd0f95e6e3e6aabaefcad654d9b4bb84f"
+device = "auto"
+image_size_px = 224
+crop_top_fraction = 0.25
+target_scales = [0.12, 0.70, 15.0]
+residual_sigmas = [
+  0.0076805082797171305,
+  0.04950308907063869,
+  0.5248288639768041,
+]
+
+[lane_calibration]
+lateral_bias_m = 0.0
+heading_bias_rad = 0.0
+curvature_bias_inv_m = 0.0
+lateral_sigma_m = 0.0076805082797171305
+heading_sigma_rad = 0.04950308907063869
+curvature_sigma_inv_m = 0.5248288639768041
+
+[lane_belief]
+lateral_process_std_m_per_sqrt_s = 0.012
+heading_process_std_rad_per_sqrt_s = 0.025
+curvature_process_std_inv_m_per_sqrt_s = 0.20
+initial_lateral_std_m = 0.20
+initial_heading_std_rad = 0.50
+initial_curvature_std_inv_m = 2.00
+covariance_floor = 1.0e-10
+detection_validity_gain = 0.65
+miss_validity_decay = 0.82
+
+[lane_belief_uncertainty]
+lateral_floor_m = 0.0
+lateral_scale = 1.0
+heading_floor_rad = 0.0
+heading_scale = 1.0

@@ -1,0 +1,168 @@
+schema_version = 1
+
+[provenance]
+scenario = "scenario_pomdp_v1.toml"
+action_config = "action_v1.toml"
+action_config_sha256 = "80154e4ff22d4d9be6ebc1d6bfcd2f7d29caa3458c18ab7859420d2940c4d94a"
+frozen_belief_config = "f9c_robust_belief_v1.toml"
+frozen_belief_config_sha256 = "359dc52020421c248bf6c26e036234191b2b97d24b505a66d85daa85b563704e"
+detector_checkpoint = "../artifacts/yolo_v1/best.pt"
+detector_checkpoint_sha256 = "3d4f816d440690493b856d25403a84a3249e4250599319c32569b97cb8d7482c"
+
+[seed_split]
+training = [10001, 10002, 10003, 10004, 10005, 10006, 10007, 10008, 10009, 10010, 10011, 10012, 10013, 10014, 10015, 10016, 10017, 10018]
+development = [11001, 11002, 11003, 11004, 11005, 11006]
+final_evaluation = [12001, 12002, 12003, 12004, 12005, 12006]
+historical_evaluation = [1101, 1102, 1103, 1104, 1105, 1106, 2101, 2102, 3101, 3102, 4101, 4102, 4103, 4104, 5101, 5102, 5103, 5104, 6101, 6102, 6103, 6104, 6105, 6106, 6107, 6108, 7101, 7102, 7103, 7104, 8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108, 8201, 8202, 8203, 8204, 8301, 8302, 8303, 8304, 9101]
+
+[observation]
+ordering = [
+  "lateral_error_m",
+  "heading_error_rad",
+  "actual_linear_velocity_mps",
+  "actual_yaw_rate_rad_s",
+  "road_curvature_inv_m",
+  "stop_line_distance_m",
+  "pedestrian_existence_probability",
+  "pedestrian_range_mean_m",
+  "pedestrian_range_std_m",
+  "pedestrian_bearing_mean_rad",
+  "pedestrian_bearing_std_rad",
+  "pedestrian_radial_velocity_mean_mps",
+  "pedestrian_radial_velocity_std_mps",
+  "pedestrian_bearing_rate_mean_rad_s",
+  "pedestrian_bearing_rate_std_rad_s",
+  "previous_linear_velocity_cmd_mps",
+  "previous_angular_velocity_cmd_rad_s",
+]
+normalization = "fixed_physical_scales"
+clip_normalized = 3.0
+
+[observation.scales]
+lateral_error_m = 0.25
+heading_error_rad = 0.75
+actual_linear_velocity_mps = 0.4
+actual_yaw_rate_rad_s = 4.0
+road_curvature_inv_m = 5.0
+stop_line_distance_m = 2.0
+pedestrian_existence_probability = 1.0
+pedestrian_range_mean_m = 2.0
+pedestrian_range_std_m = 1.0
+pedestrian_bearing_mean_rad = 1.2
+pedestrian_bearing_std_rad = 1.0
+pedestrian_radial_velocity_mean_mps = 1.0
+pedestrian_radial_velocity_std_mps = 1.0
+pedestrian_bearing_rate_mean_rad_s = 4.0
+pedestrian_bearing_rate_std_rad_s = 4.0
+previous_linear_velocity_cmd_mps = 0.4
+previous_angular_velocity_cmd_rad_s = 4.0
+
+[action]
+normalized_low = -1.0
+normalized_high = 1.0
+minimum_linear_velocity_mps = 0.0
+maximum_linear_velocity_mps = 0.4
+minimum_angular_velocity_rad_s = -4.0
+maximum_angular_velocity_rad_s = 4.0
+
+[simulator]
+frame_rate_hz = 30
+frame_skip = 1
+episode_horizon_steps = 180
+camera_width_px = 640
+camera_height_px = 480
+domain_randomization = true
+dynamics_randomization = false
+
+[scenario_distribution]
+pedestrian_modes = ["stationary", "cross_left_to_right", "cross_right_to_left"]
+sampling = "deterministic_round_robin"
+start_longitudinal_range_m = [0.02, 0.16]
+start_lateral_offset_range_m = [-0.035, 0.035]
+start_heading_offset_range_rad = [-0.05, 0.05]
+
+[road_observer]
+map_tile_size_m = 0.585
+approach_curvature_inv_m = 0.0
+
+[reward]
+progress_per_m = 5.0
+living_penalty = -0.002
+lane_lateral_weight = -0.020
+lane_lateral_scale_m = 0.15
+lane_heading_weight = -0.010
+lane_heading_scale_rad = 0.50
+lane_departure_threshold_m = 0.20
+pedestrian_safety_distance_m = 0.35
+pedestrian_unsafe_distance_m = 0.18
+pedestrian_collision_distance_m = 0.08
+pedestrian_proximity_weight = -0.080
+pedestrian_unsafe_penalty = -0.50
+comfort_linear_change_weight = -0.005
+comfort_angular_change_weight = -0.003
+comfort_steering_weight = -0.001
+stop_approach_distance_m = 0.30
+stop_speed_threshold_mps = 0.025
+stop_hold_steps = 12
+stop_approach_speed_weight = -0.020
+stop_completion_bonus = 1.0
+stop_violation_penalty = -6.0
+pedestrian_collision_terminal_penalty = -8.0
+invalid_pose_terminal_penalty = -1.0
+success_terminal_bonus = 2.0
+success_progress_m = 1.25
+
+[sac]
+implementation = "canonical_pytorch"
+hidden_sizes = [256, 256]
+activation = "relu"
+learning_rate = 3.0e-4
+gamma = 0.99
+tau = 0.005
+batch_size = 256
+replay_buffer_size = 100000
+learning_starts = 1000
+train_frequency = 1
+gradient_steps = 1
+entropy_coefficient = "auto"
+initial_entropy_coefficient = 0.20
+target_entropy = -2.0
+training_steps = 20000
+checkpoint_interval_steps = 4000
+training_seed = 10000
+device = "cuda"
+
+[checkpoint_selection]
+maximum_collision_rate = 0.20
+maximum_invalid_pose_rate = 0.25
+rule = "safety_filter_then_success_then_progress_then_return"
+
+[wandb]
+entity = "vnv"
+project = "DuckiePOMDP"
+group = "f10-sac-baseline-v1"
+job_type = "train"
+log_interval_steps = 10
+online_for_baseline_training = true
+offline_for_smoke_test = true
+
+[acceptance]
+minimum_success_rate = 0.40
+minimum_mean_progress_m = 0.75
+minimum_progress_gain_over_always_stop_m = 0.40
+minimum_progress_gain_over_random_m = 0.15
+maximum_collision_rate = 0.20
+maximum_lane_departure_rate_ratio_vs_random = 0.60
+minimum_pedestrian_speed_response_mps = 0.03
+
+[artifacts]
+directory = "../artifacts/f10"
+training_metrics_csv = "../artifacts/f10/training_metrics.csv"
+episode_metrics_csv = "../artifacts/f10/episode_metrics.csv"
+development_metrics_json = "../artifacts/f10/dev_metrics.json"
+final_metrics_json = "../artifacts/f10/final_metrics.json"
+checkpoint = "../artifacts/f10/sac_baseline.pt"
+normalization = "../artifacts/f10/normalization.json"
+checkpoint_manifest = "../artifacts/f10/checkpoint_manifest.json"
+evaluation_episodes_csv = "../artifacts/f10/evaluation_episodes.csv"
+config_manifest = "../artifacts/f10/config_manifest.json"

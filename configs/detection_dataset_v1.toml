@@ -1,0 +1,50 @@
+[dataset]
+version = "duckietown_detection_v1"
+output_root = "../datasets/duckietown_detection_v1"
+scenario = "scenario_pomdp_v1.toml"
+artifact_manifest = "../artifacts/detection_dataset_v1_manifest.json"
+artifact_stats = "../artifacts/detection_dataset_v1_stats.json"
+qa_output_root = "../artifacts/dataset_qa"
+image_width_px = 640
+image_height_px = 480
+domain_randomization = true
+capture_every_steps = 6
+maximum_steps = 168
+minimum_capture_translation_m = 0.03
+
+[annotation]
+method = "object_specific_rgb_render_difference"
+minimum_visible_pixels = 24
+minimum_bbox_width_px = 5
+minimum_bbox_height_px = 5
+
+[annotation.stop_sign]
+maximum_border_touches = 1
+minimum_truncated_height_px = 100
+
+[annotation.duckie]
+maximum_border_touches = 1
+minimum_truncated_height_px = 30
+
+[split]
+# Seeds are disjoint by construction. A seed supplies three complete episodes,
+# one for each pedestrian mode; frames are never reassigned across splits.
+train_seeds = [1101, 1102, 1103, 1104, 1105, 1106]
+validation_seeds = [2101, 2102]
+test_seeds = [3101, 3102]
+
+[trajectory]
+pedestrian_modes = [
+  "stationary",
+  "cross_left_to_right",
+  "cross_right_to_left",
+]
+# Coordinates are local to the configured start tile. Perturbations stay near
+# the lane center and retain the semantically valid map/object placement.
+start_x_range_m = [0.02, 0.16]
+lateral_offset_range_m = [-0.04, 0.04]
+heading_range_rad = [-0.05, 0.05]
+velocity_range_mps = [0.28, 0.36]
+
+[qa]
+visual_samples = 18

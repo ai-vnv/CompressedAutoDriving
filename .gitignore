@@ -1,0 +1,43 @@
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# experiment artifacts & data (large, regenerable from configs+code)
+artifacts/
+datasets/
+weights/
+/yolo*.pt
+wandb/
+graphify-out/
+refine-logs/
+
+# archives & tool state
+_archive/
+.aris/
+.codex/
+.superpowers/
+
+# latex build leftovers
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.synctex.gz
+
+# windows ADS junk
+*Zone.Identifier
+
+# trained models are tracked
+!models/
+
+# manuscript kept out of the public repo
+paper/
+
+# working backups of the slide deck
+slides-backup-*/
+*.orig

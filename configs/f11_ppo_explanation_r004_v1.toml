@@ -1,0 +1,86 @@
+schema_version = 1
+experiment = "F11 R004 once-only locked actor attribution"
+
+[frozen]
+r002b_config = "f11_ppo_explanation_r002b_v1.toml"
+r002b_config_sha256 = "7610fc0d8bdeb5b4df5f4f66c6f3f7587f56d0042af058b6e9663fc847b95925"
+r002b_metrics = "../artifacts/f11_ppo_explanation_v2/r002b/distributional_robustness.json"
+r002b_metrics_sha256 = "df1ef718a1b67662ea05a199f0ad5fcb101cac6bc266d06838dea9f29fa395b2"
+r002b_manifest = "../artifacts/f11_ppo_explanation_v2/r002b/artifact_manifest.json"
+r002b_manifest_sha256 = "22fa2c27a2d1df2736a3dc849c3ef65a8c0ea008db25ca490b0bc9b7ca8a08fe"
+r002b_protocol = "../docs/F11_R002B_PROTOCOL.md"
+r002b_protocol_sha256 = "90750c2c6ea7469b3ae0b0cc5aadec9d14afcfa242e446716d1ce90e27838bf7"
+r003_metrics = "../artifacts/f11_ppo_explanation_v2/r003/intervention_validation.json"
+r003_metrics_sha256 = "ebc2e3847cda35bfa77dcfd33a90b3ddf603b6aea7d94e892424869b08cf4991"
+r001_result = "../artifacts/f11_ppo_explanation_v2/r001/contract_audit.json"
+r001_result_sha256 = "83edfca641314e9abed2a541188c0cb8fca22e747693af0127092366ea2eb422"
+r002b_runner = "../experiments/run_f11_r002b_expected_gradients.py"
+r002b_runner_sha256 = "e60397d13a4c7d7d80b57f2f16c8e2c981816070dee606bc0e71f1b77c59f08f"
+
+[data]
+stage = "c4"
+locked_evaluation_seeds = [177101, 177102, 177103, 177104, 177105, 177106, 177107, 177108]
+forbidden_development_seeds = [177001, 177002, 177003, 177004]
+maximum_episode_steps = 2200
+sample_stride = 4
+store_privileged_truth = false
+once_only = true
+
+[phases]
+pedestrian_existence_threshold = 0.4
+pedestrian_relevant_max_range_m = 1.2
+lane_curve_min_abs_curvature_inv_m = 1.5
+stop_satisfied_vicinity_m = 0.5
+required = ["nominal", "lane_curve", "pedestrian_relevant", "stop_required", "stop_satisfied"]
+minimum_sampled_frames = 4
+
+[reference_distribution]
+kind = "locked_same_phase_distinct_cross_seed_empirical_public"
+draw_seeds = [2026081501, 2026081502, 2026081503, 2026081504, 2026081505, 2026081506]
+references_per_input = 4
+distinct_reference_seeds_per_draw = 4
+sample_without_replacement = true
+exclude_factual_seed = true
+condition_on_public_phase = true
+minimum_other_seed_support = 4
+insufficient_support_action = "classify_phase_and_r004_limited_without_fallback"
+
+[attribution]
+targets = ["v_cmd_mps", "omega_cmd_rad_s"]
+path_steps = 128
+sample_batch_size = 128
+draw_estimator = "mean_of_four_reference_igs"
+final_estimator = "mean_of_six_draw_attributions"
+effective_reference_count = 24
+primary_statistic = "six_group_absolute_share"
+individual_features_are_secondary = true
+
+[bootstrap]
+unit = "locked_evaluation_seed"
+replicates = 2000
+seed = 2026081599
+confidence_level = 0.95
+
+[gate]
+completeness_median_absolute_tolerance = 1.0e-4
+completeness_p99_absolute_tolerance = 1.0e-3
+minimum_median_pairwise_group_spearman = 0.5
+minimum_group_sign_agreement = 0.6
+minimum_top_group_pair_agreement = 0.33
+maximum_median_group_share_l1 = 0.75
+require_all_public_phases = true
+require_distinct_cross_seed_references = true
+require_no_privileged_truth = true
+thresholds_are_immutable = true
+
+[output]
+directory = "../artifacts/f11_ppo_explanation_v2/r004"
+launch_claim = "once_only_launch_claim.json"
+trace = "locked_public_trace.npz"
+trace_manifest = "locked_trace_manifest.json"
+references = "reference_draws.npz"
+draw_attributions = "distributional_integrated_gradients.npz"
+final_attributions = "final_mean_attribution.npz"
+group_rows = "final_group_attribution.csv"
+group_summary = "final_group_summary.csv"
+metrics = "final_attribution_metrics.json"

@@ -1,0 +1,64 @@
+# F10 visual-lane gate. Values are modeling assumptions until real-simulator
+# calibration/held-out validation artifacts freeze them.
+
+[lane_perception]
+lane_half_width_m = 0.117
+roi_top_fraction = 0.38
+row_stride_px = 2
+minimum_run_width_px = 2
+minimum_point_count = 8
+minimum_forward_m = 0.10
+maximum_forward_m = 0.75
+pose_minimum_forward_m = 0.12
+pose_maximum_forward_m = 0.40
+maximum_abs_lateral_m = 0.60
+minimum_forward_span_m = 0.08
+boundary_normal_fit_radius_m = 0.10
+boundary_start_tolerance_m = 0.20
+yellow_min_red = 115
+yellow_min_green = 65
+yellow_red_blue_margin = 90
+yellow_green_blue_margin = 55
+white_min_intensity = 150
+white_max_channel_spread = 80
+adaptive_marking_min_value = 80
+adaptive_marking_dark_percentile = 80.0
+adaptive_marking_bright_percentile = 95.0
+robust_sigma_threshold = 2.75
+lateral_std_floor_m = 0.008
+heading_std_floor_rad = 0.015
+curvature_std_floor_inv_m = 0.12
+
+# Fixed after the dynamic trajectory-level development gate.  The affine map
+# is fitted only on CCW calibration seeds 36301--36302; seeds 36401--36402 are
+# development-only and seeds 36501--36502 are reserved for the final gate.
+[lane_calibration]
+lateral_bias_m = 0.0
+heading_bias_rad = 0.0
+curvature_bias_inv_m = 0.0
+lateral_sigma_m = 0.029537663886610256
+heading_sigma_rad = 0.07453452817855384
+curvature_sigma_inv_m = 0.9572409897967034
+
+[lane_calibration.affine]
+matrix = [
+  [-0.1876171513547601, -0.06741331976765857, -0.003839597164311495],
+  [-0.24185660485410831, 0.1583571598386751, 0.00552631943670269],
+  [-5.296226811134201, 1.2304948720551825, 0.005293201081424059],
+]
+offset = [
+  0.03933686866363871,
+  -0.05921534224809577,
+  0.07658415071274538,
+]
+
+[lane_belief]
+lateral_process_std_m_per_sqrt_s = 0.012
+heading_process_std_rad_per_sqrt_s = 0.025
+curvature_process_std_inv_m_per_sqrt_s = 0.20
+initial_lateral_std_m = 0.20
+initial_heading_std_rad = 0.50
+initial_curvature_std_inv_m = 2.00
+covariance_floor = 1.0e-10
+detection_validity_gain = 0.65
+miss_validity_decay = 0.82

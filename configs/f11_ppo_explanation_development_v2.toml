@@ -1,0 +1,59 @@
+schema_version = 1
+experiment = "F11 v2 R002/R003 development protocol"
+
+[frozen]
+r001_config = "f11_ppo_explanation_v2.toml"
+r001_config_sha256 = "550e486fdf6f26b3188f89926ce53ba9a5b8f11e1cefe035b832f66dacc8c937"
+r001_result = "../artifacts/f11_ppo_explanation_v2/r001/contract_audit.json"
+r001_result_sha256 = "83edfca641314e9abed2a541188c0cb8fca22e747693af0127092366ea2eb422"
+r001_trace = "../artifacts/f11_ppo_explanation_v2/r001/public_trace.npz"
+r001_trace_sha256 = "f8b9684abcd7e4ea1710126c2f6caf0c0a0bd3c666644237925ae97b834c94b8"
+plan = "../refine-logs/EXPERIMENT_PLAN.md"
+plan_sha256 = "e257ede7e62791305924df9a2f1d38245e321dbc373fb2c83d432392585a5d62"
+
+[data]
+stage = "c4"
+development_seeds = [177001, 177002, 177003, 177004]
+locked_evaluation_seeds = [177101, 177102, 177103, 177104, 177105, 177106, 177107, 177108]
+maximum_episode_steps = 2200
+sample_stride = 4
+output_root = "../artifacts/f11_ppo_explanation_v2"
+store_privileged_truth = false
+
+[phases]
+pedestrian_existence_threshold = 0.4
+pedestrian_relevant_max_range_m = 1.2
+lane_curve_min_abs_curvature_inv_m = 1.5
+stop_satisfied_vicinity_m = 0.5
+required = ["nominal", "lane_curve", "pedestrian_relevant", "stop_required", "stop_satisfied"]
+minimum_sampled_frames = 4
+
+[r002]
+baselines = ["episode_reset", "public_median", "semantic_neutral_hazard"]
+targets = ["v_cmd_mps", "omega_cmd_rad_s"]
+path_steps = 128
+sample_batch_size = 128
+completeness_median_absolute_tolerance = 1.0e-4
+completeness_p99_absolute_tolerance = 1.0e-3
+minimum_median_pairwise_group_spearman = 0.5
+minimum_group_sign_agreement = 0.6
+minimum_top_group_pair_agreement = 0.33
+maximum_median_group_share_l1 = 0.75
+output_directory = "../artifacts/f11_ppo_explanation_v2/r002"
+
+[r003]
+interventions = [
+  "pedestrian_absent",
+  "stop_absent",
+  "lane_centered",
+  "lane_low_confidence",
+  "previous_action_neutral",
+  "sham",
+]
+lane_low_confidence_validity = 0.25
+lane_low_confidence_min_lateral_std_m = 0.20
+lane_low_confidence_min_heading_std_rad = 0.50
+lane_low_confidence_min_curvature_std_inv_m = 2.50
+maximum_normalized_absolute_value = 3.0
+sham_action_absolute_tolerance = 1.0e-7
+output_directory = "../artifacts/f11_ppo_explanation_v2/r003"

@@ -1,0 +1,104 @@
+schema_version = 1
+experiment = "F12 Belief-PPO actor compression v1"
+
+[frozen]
+policy_config = "f10_ppo_visual_objects_v30.toml"
+checkpoint = "../artifacts/f10_ppo_visual_objects_v30/c4/ppo_selected.pt"
+checkpoint_sha256 = "02e898ce12d71f97016d50ed8a40574807e6d2fd995fc9f0dcd24f357f2c6250"
+observation_dimension = 29
+hidden_sizes = [256, 256]
+activation = "tanh"
+action_dimension = 2
+physical_action_ranges = [0.4, 8.0]
+
+[seeds]
+compression_development = [178001, 178002, 178003, 178004, 178005, 178006, 178007, 178008]
+compression_selection = [178021, 178022, 178023, 178024, 178025, 178026, 178027, 178028]
+compression_final_holdout = [178101, 178102, 178103, 178104, 178105, 178106, 178107, 178108]
+retention_c0 = [178201, 178202]
+retention_c1 = [178211, 178212]
+retention_c2 = [178221, 178222]
+retention_c3 = [178231, 178232]
+forbidden_f11_locked = [177101, 177102, 177103, 177104, 177105, 177106, 177107, 177108]
+
+[data]
+stage = "c4"
+maximum_episode_steps = 2200
+sample_stride = 1
+store_privileged_truth = false
+phases = ["nominal", "lane_curve", "pedestrian_relevant", "stop_required", "stop_satisfied"]
+pedestrian_existence_threshold = 0.4
+pedestrian_relevant_max_range_m = 1.2
+lane_curve_min_abs_curvature_inv_m = 1.5
+stop_satisfied_vicinity_m = 0.5
+
+[pruning]
+criterion = "layerwise_l2_incoming_plus_outgoing"
+include_bias_in_score = true
+tie_break = "lower_original_neuron_index"
+widths = [192, 128, 96, 64]
+
+[distillation]
+loss = "smooth_l1_normalized_physical_action"
+epochs = 80
+batch_size = 512
+learning_rate = 0.001
+weight_decay = 0.000001
+seed = 2026081401
+phase_balanced = true
+copy_state_independent_log_std = true
+
+[quantization]
+backend = "x86"
+framework = "torch.ao.quantization_eager"
+weight_dtype = "qint8"
+activation_dtype = "quint8"
+weight_granularity = "per_channel_symmetric"
+activation_granularity = "per_tensor_affine"
+mode = "static"
+calibration_max_rows_per_phase = 1024
+qat_epochs = 40
+qat_learning_rate = 0.0001
+qat_seed = 2026081402
+
+[fidelity]
+omega_sign_deadband_rad_s = 0.2
+maximum_v_mae_mps = 0.020
+maximum_v_p95_abs_error_mps = 0.050
+maximum_omega_mae_rad_s = 0.200
+maximum_omega_p95_abs_error_rad_s = 0.500
+maximum_omega_sign_disagreement = 0.050
+minimum_pearson = 0.980
+minimum_spearman = 0.970
+critical_phase_maximum_v_mae_mps = 0.025
+critical_phase_maximum_omega_mae_rad_s = 0.250
+
+[behavior]
+maximum_new_collisions = 0
+maximum_collision_rate_increase = 0.0
+maximum_unsafe_episode_rate_increase = 0.125
+maximum_stop_violation_rate_increase = 0.125
+maximum_lane_failure_rate_increase = 0.125
+maximum_completion_rate_drop = 0.125
+maximum_restart_rate_drop = 0.125
+maximum_mean_progress_drop_m = 0.50
+maximum_minimum_clearance_drop_m = 0.05
+
+[selection]
+rule = "behavioral_eligibility_then_pareto_size_latency_fidelity"
+selected_pruning_width_rule = "smallest_behaviorally_eligible_pd_width"
+deployment_preference = ["behavior", "action_fidelity", "parameter_memory", "same_device_latency"]
+minimum_qat_relative_normalized_mae_improvement = 0.10
+prefer_pdq_when_eligible = true
+final_holdout_once_only = true
+
+[benchmark]
+device = "cpu"
+warmup_iterations = 1000
+timed_iterations = 10000
+repeats = 5
+batch_size = 1
+threads = 1
+
+[artifacts]
+directory = "../artifacts/f12_belief_ppo_compression_v1"

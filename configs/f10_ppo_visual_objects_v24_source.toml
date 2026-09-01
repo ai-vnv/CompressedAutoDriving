@@ -1,0 +1,28 @@
+schema_version = 1
+extends = "f10_ppo_visual_objects_v23_source.toml"
+extends_sha256 = "aa8551c927e78f6d903c9620fb96c0f139279cde9d3b8243485ae4407a9237b2"
+experiment = "F10-PPO C4 one-episode privileged guidance source v24"
+
+[provenance]
+formulation_doc = "../docs/F10_PPO_OBJECTS_V24_FORMULATION.md"
+
+[seed_protocol]
+excluded_historical_seed_ranges = [
+  [80000, 157999],
+  [161000, 161999],
+  [164000, 167999],
+  [169000, 171999],
+]
+
+[curriculum.c4]
+training_steps = 4096
+checkpoint_interval_steps = 1024
+training_seeds = [172001,172002,172003,172004,172005,172006,172007,172008,172009,172010,172011,172012]
+development_seeds = [172101,172102,172103,172104]
+stage_final_seeds = [172201,172202,172203,172204]
+
+[wandb]
+group = "f10-ppo-visual-objects-v24-c4-guided"
+
+[artifacts]
+directory = "../artifacts/f10_ppo_visual_objects_v24"

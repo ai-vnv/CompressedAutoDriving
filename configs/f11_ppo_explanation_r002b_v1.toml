@@ -1,0 +1,62 @@
+schema_version = 1
+experiment = "F11 R002b phase-conditioned distributional IG"
+
+[frozen]
+r002_r003_config = "f11_ppo_explanation_development_v2.toml"
+r002_r003_config_sha256 = "d1c449ef14aabf82a1d4cd275d8555f6ab1424d1119f844640f62002512f7a66"
+r002_metrics = "../artifacts/f11_ppo_explanation_v2/r002/baseline_robustness.json"
+r002_metrics_sha256 = "f8da9c705eea7f52cab506dbae81684f302b55afbd4c1b03b4903cf455bc2ef5"
+r003_metrics = "../artifacts/f11_ppo_explanation_v2/r003/intervention_validation.json"
+r003_metrics_sha256 = "ebc2e3847cda35bfa77dcfd33a90b3ddf603b6aea7d94e892424869b08cf4991"
+development_trace = "../artifacts/f11_ppo_explanation_v2/r002/development_trace.npz"
+development_trace_sha256 = "1fa0f8bb554aa4ce22f0820dd5afa644ec298c8a5ef0d259edd20e1de0b9f34f"
+r001_result = "../artifacts/f11_ppo_explanation_v2/r001/contract_audit.json"
+r001_result_sha256 = "83edfca641314e9abed2a541188c0cb8fca22e747693af0127092366ea2eb422"
+
+[data]
+development_seeds = [177001, 177002, 177003, 177004]
+locked_evaluation_seeds = [177101, 177102, 177103, 177104, 177105, 177106, 177107, 177108]
+sample_stride = 4
+stored_privileged_truth = false
+
+[reference_distribution]
+kind = "phase_conditioned_cross_seed_empirical_public"
+draw_seeds = [2026081401, 2026081402, 2026081403, 2026081404, 2026081405, 2026081406]
+references_per_input = 4
+sample_without_replacement = true
+exclude_same_seed = true
+condition_on_public_phase = true
+
+[attribution]
+targets = ["v_cmd_mps", "omega_cmd_rad_s"]
+path_steps = 128
+sample_batch_size = 128
+primary_statistic = "six_group_absolute_share"
+individual_features_are_secondary = true
+
+[bootstrap]
+unit = "development_seed"
+replicates = 2000
+seed = 2026081499
+confidence_level = 0.95
+
+[gate]
+completeness_median_absolute_tolerance = 1.0e-4
+completeness_p99_absolute_tolerance = 1.0e-3
+minimum_median_pairwise_group_spearman = 0.5
+minimum_group_sign_agreement = 0.6
+minimum_top_group_pair_agreement = 0.33
+maximum_median_group_share_l1 = 0.75
+require_all_public_phases = true
+require_cross_seed_references = true
+require_locked_evaluation_seeds_unopened = true
+pass_unlocks_r004 = true
+limited_forbids_r002c = true
+
+[output]
+directory = "../artifacts/f11_ppo_explanation_v2/r002b"
+references = "reference_draws.npz"
+attributions = "distributional_integrated_gradients.npz"
+group_rows = "group_attribution_development.csv"
+metrics = "distributional_robustness.json"
+

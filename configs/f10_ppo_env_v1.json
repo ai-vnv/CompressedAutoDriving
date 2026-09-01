@@ -1,0 +1,24 @@
+{
+  "name": "duckie-pomdp-f10-ppo-v1",
+  "base_environment": "/home/pannntastic/aivnv/duckie/.venv",
+  "python": "/home/pannntastic/aivnv/duckie/.venv/bin/python",
+  "pythonpath": [
+    "/home/pannntastic/aivnv/duckie-pomdp/src",
+    "/home/pannntastic/aivnv/duckie/src"
+  ],
+  "environment": {
+    "DUCKIETOWN_HEADLESS": "1",
+    "PYTHONHASHSEED": "0"
+  },
+  "dependencies": {
+    "install": false,
+    "stable_baselines3": null,
+    "ppo_implementation": "project-local canonical PyTorch",
+    "reason": "Stable-Baselines3 is not installed; dependencies are not changed silently."
+  },
+  "wandb": {
+    "entity": "vnv",
+    "project": "DuckiePOMDP",
+    "credentials": "WSL user credential store; never committed"
+  }
+}

@@ -1,0 +1,84 @@
+schema_version = 1
+name = "visual_lane_belief_v5_pose_excited_quadratic"
+range_semantics = "signed lane-centre error from front RGB"
+
+[lane_perception]
+lane_half_width_m = 0.117
+roi_top_fraction = 0.38
+row_stride_px = 2
+minimum_run_width_px = 2
+minimum_point_count = 8
+minimum_forward_m = 0.10
+maximum_forward_m = 0.75
+pose_minimum_forward_m = 0.12
+pose_maximum_forward_m = 0.40
+maximum_abs_lateral_m = 0.60
+minimum_forward_span_m = 0.08
+boundary_normal_fit_radius_m = 0.10
+boundary_start_tolerance_m = 0.20
+yellow_min_red = 115
+yellow_min_green = 65
+yellow_red_blue_margin = 90
+yellow_green_blue_margin = 55
+white_min_intensity = 150
+white_max_channel_spread = 80
+adaptive_marking_min_value = 80
+adaptive_marking_dark_percentile = 80.0
+adaptive_marking_bright_percentile = 95.0
+robust_sigma_threshold = 2.75
+lateral_std_floor_m = 0.008
+heading_std_floor_rad = 0.015
+curvature_std_floor_inv_m = 0.12
+dual_boundary_fusion_enabled = true
+maximum_boundary_disagreement_m = 0.060
+single_boundary_std_multiplier = 1.50
+adaptive_boundary_std_multiplier = 2.00
+
+# Fixed offline calibration fitted only on the pose-excited 70xxx calibration
+# split.  The quadratic basis is necessary because a centreline-only affine
+# fit cannot preserve heading sign away from the lane centre.
+[lane_calibration]
+lateral_bias_m = 0.0
+heading_bias_rad = 0.0
+curvature_bias_inv_m = 0.0
+lateral_sigma_m = 0.018170566268621523
+heading_sigma_rad = 0.148923642338503
+curvature_sigma_inv_m = 2.6385948334799734
+
+[lane_calibration.affine]
+matrix = [
+  [0.6293150450392814, 0.0649222678511595, 0.004136609538148824],
+  [3.5114101866292997, 0.3858372792667889, 0.009048578588387245],
+  [-2.8101905521276755, 12.81533295499429, -0.5554691999051808],
+]
+offset = [
+  0.011377681397090148,
+  0.014964719620401391,
+  -0.11325783593759942,
+]
+
+[lane_calibration.quadratic]
+# Feature order: d^2, phi^2, kappa^2, d*phi, d*kappa, phi*kappa.
+matrix = [
+  [1.8295816324127725, 0.08414307097082598, -0.0004683984685817843, 0.5867780091053328, -0.015285623840721338, -0.002766500747885129],
+  [8.619443816984422, 0.3793331116688731, 0.01896752607046598, 1.329590214990118, 0.0245777571507885, -0.08609763593187403],
+  [-43.46948986784187, -13.60370392856894, -0.3962802790659657, -25.674175289715805, -1.9953268176445282, 1.8632942033960915],
+]
+
+[lane_belief]
+lateral_process_std_m_per_sqrt_s = 0.012
+heading_process_std_rad_per_sqrt_s = 0.025
+curvature_process_std_inv_m_per_sqrt_s = 0.20
+initial_lateral_std_m = 0.20
+initial_heading_std_rad = 0.50
+initial_curvature_std_inv_m = 2.00
+covariance_floor = 1.0e-10
+detection_validity_gain = 0.65
+miss_validity_decay = 0.82
+
+# Provisional until the dedicated dynamic development split is evaluated.
+[lane_belief_uncertainty]
+heading_floor_rad = 0.0
+heading_scale = 1.0
+lateral_floor_m = 0.0
+lateral_scale = 1.0
