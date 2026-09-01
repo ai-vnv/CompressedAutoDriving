@@ -181,7 +181,7 @@ experiments/    evaluation runners, protocol-freeze scripts, the
                 every reported number from the ledgers
 src/            perception (YOLO, MobileNetV3), EKF belief, PPO environment,
                 compression (pruning / distillation / PTQ / QAT)
-tests/          378 tests that run on a bare clone, plus a provenance
+tests/          375 tests that run on a bare clone, plus a provenance
                 suite that needs the regenerated artifacts (721 in total)
 maps/, scripts/ simulator maps and utilities
 ```
@@ -205,7 +205,7 @@ python experiments/verification/verify_reported_numbers.py
 
 | Badge | What it measures | Where the number comes from |
 |---|---|---|
-| tests | the 378 artifact-independent tests on a clean machine | GitHub Actions, `.github/workflows/tests.yml` |
+| tests | the 375 artifact-independent tests on a clean machine | GitHub Actions, `.github/workflows/tests.yml` |
 | codecov | statement coverage of `src/duckie_pomdp` in that run | uploaded from the same workflow |
 | full suite 721/721 | the whole suite once `artifacts/` has been regenerated | measured locally, not reproducible in CI without the artifacts |
 | V&V spec 65/65 | reported numbers recomputed from the ledgers | the command above, run locally |
@@ -241,10 +241,10 @@ python experiments/run_f17_optimization_method_order.py evaluate --pathway A6
 
 Two things to know before running:
 
-- **The suite runs on a bare clone.** `pytest tests -q` collects 378 tests and
+- **The suite runs on a bare clone.** `pytest tests -q` collects 375 tests and
   all of them pass without any downloaded data: perception, belief, EKF,
   environment, action mapping, and the compression transforms. A second group
-  of 343 tests is a provenance suite that re-derives reported numbers from the
+  of 346 tests is a provenance suite that re-derives reported numbers from the
   evaluation ledgers, so it is collected only once `artifacts/` has been
   regenerated, which brings the total to 721. `tests/conftest.py` decides this
   and prints which mode it is in; nothing needs to be configured.
