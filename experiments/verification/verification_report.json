@@ -1,0 +1,589 @@
+{
+  "spec": "verify_reported_numbers",
+  "total": 65,
+  "passed": 65,
+  "skipped": [],
+  "checks": [
+    {
+      "name": "completions A0",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        8,
+        7,
+        7,
+        7,
+        8
+      ],
+      "reported": [
+        8,
+        7,
+        7,
+        7,
+        8
+      ]
+    },
+    {
+      "name": "completions A1",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        3,
+        3,
+        0,
+        0,
+        0
+      ],
+      "reported": [
+        3,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "completions A2",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        0,
+        0,
+        0,
+        8,
+        8
+      ],
+      "reported": [
+        0,
+        0,
+        0,
+        8,
+        8
+      ]
+    },
+    {
+      "name": "completions A3",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        8,
+        7,
+        8,
+        8,
+        8
+      ],
+      "reported": [
+        8,
+        7,
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "name": "completions A4",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        8,
+        7,
+        7,
+        7,
+        8
+      ],
+      "reported": [
+        8,
+        7,
+        7,
+        7,
+        8
+      ]
+    },
+    {
+      "name": "completions A5",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        4,
+        3,
+        0,
+        0,
+        0
+      ],
+      "reported": [
+        4,
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "completions A6",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        8,
+        7,
+        7,
+        3,
+        7
+      ],
+      "reported": [
+        8,
+        7,
+        7,
+        3,
+        7
+      ]
+    },
+    {
+      "name": "completions A7",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        0,
+        0,
+        0,
+        8,
+        8
+      ],
+      "reported": [
+        0,
+        0,
+        0,
+        8,
+        8
+      ]
+    },
+    {
+      "name": "completions A8",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        8,
+        7,
+        8,
+        5,
+        1
+      ],
+      "reported": [
+        8,
+        7,
+        8,
+        5,
+        1
+      ]
+    },
+    {
+      "name": "completions F16H",
+      "group": "completions",
+      "passed": true,
+      "recomputed": [
+        8,
+        7,
+        8,
+        8,
+        8
+      ],
+      "reported": [
+        8,
+        7,
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "name": "verdict string A1",
+      "group": "completions",
+      "passed": true,
+      "recomputed": "FFFFF",
+      "reported": "FFFFF"
+    },
+    {
+      "name": "verdict string A2",
+      "group": "completions",
+      "passed": true,
+      "recomputed": "FFFPP",
+      "reported": "FFFPP"
+    },
+    {
+      "name": "verdict string A3",
+      "group": "completions",
+      "passed": true,
+      "recomputed": "PPPPP",
+      "reported": "PPPPP"
+    },
+    {
+      "name": "verdict string A4",
+      "group": "completions",
+      "passed": true,
+      "recomputed": "PPPPP",
+      "reported": "PPPPP"
+    },
+    {
+      "name": "verdict string A5",
+      "group": "completions",
+      "passed": true,
+      "recomputed": "FFFFF",
+      "reported": "FFFFF"
+    },
+    {
+      "name": "verdict string A6",
+      "group": "completions",
+      "passed": true,
+      "recomputed": "PPPFF",
+      "reported": "PPPFF"
+    },
+    {
+      "name": "verdict string A7",
+      "group": "completions",
+      "passed": true,
+      "recomputed": "FFFPP",
+      "reported": "FFFPP"
+    },
+    {
+      "name": "verdict string A8",
+      "group": "completions",
+      "passed": true,
+      "recomputed": "PPPFF",
+      "reported": "PPPFF"
+    },
+    {
+      "name": "verdict string F16H",
+      "group": "completions",
+      "passed": true,
+      "recomputed": "PPPPP",
+      "reported": "PPPPP"
+    },
+    {
+      "name": "A8 C3 stop violations of 8",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 4,
+      "reported": 4
+    },
+    {
+      "name": "A8 C4 stop violations of 8",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 7,
+      "reported": 7
+    },
+    {
+      "name": "A6 C3 stop violation rate",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 0.0,
+      "reported": 0.0
+    },
+    {
+      "name": "A1 C3 stop violation rate",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 1.0,
+      "reported": 1.0
+    },
+    {
+      "name": "A5 C3 stop violation rate",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 1.0,
+      "reported": 1.0
+    },
+    {
+      "name": "A5 maximum invalid-pose rate",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 1.0,
+      "reported": 1.0
+    },
+    {
+      "name": "A2 C0 invalid-pose rate",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 1.0,
+      "reported": 1.0
+    },
+    {
+      "name": "A2 C2 lane-failure rate",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 1.0,
+      "reported": 1.0
+    },
+    {
+      "name": "A0 has exactly three 7/8 curricula",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 3,
+      "reported": 3
+    },
+    {
+      "name": "A8 C4 completions",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 1,
+      "reported": 1
+    },
+    {
+      "name": "A6 C4 completions",
+      "group": "failure-modes",
+      "passed": true,
+      "recomputed": 7,
+      "reported": 7
+    },
+    {
+      "name": "A8 C3 omega MAE",
+      "group": "fidelity",
+      "passed": true,
+      "recomputed": 0.05482530042348698,
+      "reported": 0.055
+    },
+    {
+      "name": "A6 C3 omega MAE",
+      "group": "fidelity",
+      "passed": true,
+      "recomputed": 0.08555962420293631,
+      "reported": 0.086
+    },
+    {
+      "name": "A4 C4 omega Spearman",
+      "group": "fidelity",
+      "passed": true,
+      "recomputed": 0.922862871901589,
+      "reported": 0.923
+    },
+    {
+      "name": "FP16 vs FP32 maximum omega-MAE gap",
+      "group": "fidelity",
+      "passed": true,
+      "recomputed": 0.0003909964006496916,
+      "reported": 0.0004
+    },
+    {
+      "name": "FP16 vs FP32 maximum progress gap",
+      "group": "fidelity",
+      "passed": true,
+      "recomputed": 0.0078,
+      "reported": 0.008
+    },
+    {
+      "name": "A3 serialized bytes",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 29295,
+      "reported": 29295
+    },
+    {
+      "name": "FP16 serialized bytes",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 15865,
+      "reported": 15865
+    },
+    {
+      "name": "A6 serialized bytes",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 34088,
+      "reported": 34088
+    },
+    {
+      "name": "A3 parameter memory bytes",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 24840,
+      "reported": 24840
+    },
+    {
+      "name": "FP16 parameter memory bytes",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 12420,
+      "reported": 12420
+    },
+    {
+      "name": "A3 median latency us",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 19.374005205463618,
+      "reported": 19.4
+    },
+    {
+      "name": "FP16 median latency us",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 24.493005184922367,
+      "reported": 24.5
+    },
+    {
+      "name": "A6 median latency us",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 12.894997780676931,
+      "reported": 12.9
+    },
+    {
+      "name": "FP16 latency increase percent",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 26.422001672711183,
+      "reported": 26.4
+    },
+    {
+      "name": "parameter reduction percent",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 91.60652015246129,
+      "reported": 91.6
+    },
+    {
+      "name": "A6 parameter memory bytes, unpacked from the deployed graph",
+      "group": "cost",
+      "passed": true,
+      "recomputed": 7640,
+      "reported": 7640
+    },
+    {
+      "name": "total evaluated episodes",
+      "group": "protocol",
+      "passed": true,
+      "recomputed": 400,
+      "reported": 400
+    },
+    {
+      "name": "FP16 validity classification",
+      "group": "protocol",
+      "passed": true,
+      "recomputed": "PASS",
+      "reported": "PASS"
+    },
+    {
+      "name": "FP16 accumulation width",
+      "group": "protocol",
+      "passed": true,
+      "recomputed": "wider_than_fp16",
+      "reported": "wider_than_fp16"
+    },
+    {
+      "name": "INT8 determinism addendum",
+      "group": "protocol",
+      "passed": true,
+      "recomputed": "PASS",
+      "reported": "PASS"
+    },
+    {
+      "name": "FP16 determinism addendum",
+      "group": "protocol",
+      "passed": true,
+      "recomputed": "PASS",
+      "reported": "PASS"
+    },
+    {
+      "name": "sealed holdout never opened",
+      "group": "protocol",
+      "passed": true,
+      "recomputed": false,
+      "reported": false
+    },
+    {
+      "name": "eligible candidates",
+      "group": "protocol",
+      "passed": true,
+      "recomputed": 0,
+      "reported": 0
+    },
+    {
+      "name": "balanced rehearsal dataset states",
+      "group": "rehearsal-data",
+      "passed": true,
+      "recomputed": 62176,
+      "reported": 62176
+    },
+    {
+      "name": "horizon c0",
+      "group": "contract",
+      "passed": true,
+      "recomputed": 1900,
+      "reported": 1900
+    },
+    {
+      "name": "horizon c1",
+      "group": "contract",
+      "passed": true,
+      "recomputed": 2700,
+      "reported": 2700
+    },
+    {
+      "name": "horizon c2",
+      "group": "contract",
+      "passed": true,
+      "recomputed": 2700,
+      "reported": 2700
+    },
+    {
+      "name": "horizon c3",
+      "group": "contract",
+      "passed": true,
+      "recomputed": 2700,
+      "reported": 2700
+    },
+    {
+      "name": "horizon c4",
+      "group": "contract",
+      "passed": true,
+      "recomputed": 4200,
+      "reported": 4200
+    },
+    {
+      "name": "belief dimension",
+      "group": "contract",
+      "passed": true,
+      "recomputed": 29,
+      "reported": 29
+    },
+    {
+      "name": "physical action ranges",
+      "group": "contract",
+      "passed": true,
+      "recomputed": [
+        0.4,
+        8.0
+      ],
+      "reported": [
+        0.4,
+        8.0
+      ]
+    },
+    {
+      "name": "omega sign deadband",
+      "group": "contract",
+      "passed": true,
+      "recomputed": 0.2,
+      "reported": 0.2
+    },
+    {
+      "name": "minimum Spearman for fidelity",
+      "group": "contract",
+      "passed": true,
+      "recomputed": 0.97,
+      "reported": 0.97
+    },
+    {
+      "name": "evaluation seeds exclude the sealed holdout",
+      "group": "contract",
+      "passed": true,
+      "recomputed": 0,
+      "reported": 0
+    },
+    {
+      "name": "historical F12 speedup claim present in its source document",
+      "group": "contract",
+      "passed": true,
+      "recomputed": true,
+      "reported": true
+    }
+  ]
+}

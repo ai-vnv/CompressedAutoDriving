@@ -1,0 +1,92 @@
+name: VnV
+
+# Two things are meaningful on a hosted runner here:
+#
+#   1. `vnvspec validate` — the GtWR quality gate on the spec itself. It fails
+#      this workflow on regressions, and caught 16 statement violations on its
+#      first run against this repository.
+#   2. A Shields endpoint carrying a verified requirement count. Each
+#      requirement names the verifier check groups that establish it, and this
+#      workflow reads them out of the committed report
+#      (experiments/verification/verification_report.json, written by
+#      experiments/verification/verify_reported_numbers.py against the
+#      regenerated evaluation artifacts). The count is VERIFIED here, not
+#      asserted: a requirement whose groups are missing, empty, or not green
+#      fails the workflow rather than quietly turning the badge red.
+#
+# The verifier itself cannot run here, because it needs the multi-gigabyte
+# evaluation artifacts that are not distributed with the repository.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vnvspec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install vnvspec
+        run: pip install vnvspec pyyaml
+
+      - name: Validate the spec (GtWR quality gate)
+        run: vnvspec validate .vnvspec/spec.yaml
+
+      - name: Verify each requirement against the committed verification report
+        run: |
+          python - <<'PY'
+          import json, pathlib, sys, yaml
+
+          spec = yaml.safe_load(pathlib.Path(".vnvspec/spec.yaml").read_text())
+          report = json.loads(pathlib.Path(
+              "experiments/verification/verification_report.json").read_text())
+          checks = report["checks"]
+          reqs = spec["requirements"]
+
+          passed, problems = [], []
+          for r in reqs:
+              groups = r["metadata"]["check_groups"]
+              hits = [c for c in checks if c["group"] in groups]
+              missing = [g for g in groups
+                         if not any(c["group"] == g for c in checks)]
+              ok = bool(hits) and not missing and all(c["passed"] for c in hits)
+              print(f"{r['id']}: {len(hits)} checks over {groups}, "
+                    f"{'PASS' if ok else 'FAIL'}")
+              if missing:
+                  problems.append(f"{r['id']} maps to unknown groups {missing}")
+              if ok:
+                  passed.append(r["id"])
+
+          n, k = len(reqs), len(passed)
+          pathlib.Path("badge").mkdir(exist_ok=True)
+          pathlib.Path("badge/vnv-badge.json").write_text(json.dumps({
+              "schemaVersion": 1,
+              "label": "V&V spec",
+              "message": f"{k}/{n} pass",
+              "color": "brightgreen" if k == n else "red",
+          }))
+          for p in problems:
+              print("PROBLEM:", p)
+          # A regression in the mapping or in the report is a workflow failure,
+          # not a quietly red badge nobody looks at.
+          sys.exit(0 if k == n and not problems else 1)
+          PY
+
+      - name: Publish the badge endpoint to gh-pages
+        if: github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: badge
+          destination_dir: .
+          keep_files: true

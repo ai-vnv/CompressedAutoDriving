@@ -5,7 +5,7 @@
 [![tests](https://github.com/ai-vnv/CompressedAutoDriving/actions/workflows/tests.yml/badge.svg)](https://github.com/ai-vnv/CompressedAutoDriving/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/ai-vnv/CompressedAutoDriving/branch/main/graph/badge.svg)](https://codecov.io/gh/ai-vnv/CompressedAutoDriving)
 [![full suite](https://img.shields.io/badge/full%20suite-721%2F721%20pass-2ea44f)](#verification)
-[![V%26V spec](https://img.shields.io/badge/V%26V%20spec-65%2F65%20pass-2ea44f)](#verification)
+[![V&V spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fai-vnv.github.io%2FCompressedAutoDriving%2Fvnv-badge.json)](https://github.com/ai-vnv/CompressedAutoDriving/blob/main/.vnvspec/spec.yaml)
 [![license](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
 
 Where does a compressed driving policy stop being able to drive, and what brings
@@ -179,6 +179,8 @@ configs/        experiment configurations: curricula, acceptance criteria,
 experiments/    evaluation runners, protocol-freeze scripts, the
                 figure-generation code, and verification/ which recomputes
                 every reported number from the ledgers
+.vnvspec/       the requirements this study claims, each mapped to the checks
+                that verify it
 src/            perception (YOLO, MobileNetV3), EKF belief, PPO environment,
                 compression (pruning / distillation / PTQ / QAT)
 tests/          375 tests that run on a bare clone, of which 344 need no
@@ -204,6 +206,15 @@ the frozen configurations, or the protocol loader.
 python experiments/verification/verify_reported_numbers.py
 ```
 
+The claims themselves are written down rather than left implicit.
+`.vnvspec/spec.yaml` states each one as a requirement with its rationale, its
+acceptance criteria, and the verifier check groups that establish it. Two
+workflows act on it: `vnvspec validate` runs a requirement-quality gate over
+the statements, and the V&V workflow reads the committed report
+(`experiments/verification/verification_report.json`) and fails if any
+requirement's checks are missing or not green, which is also what produces the
+V&V badge above. The badge count is verified on every push, not typed in.
+
 The suite comes in three nested groups, and each badge names one of them.
 
 | Group | Size | Needs | Where it runs |
@@ -220,11 +231,14 @@ the pytest header, so a run always says what it left out.
 | tests | the 344 core tests on a clean machine | GitHub Actions, `.github/workflows/tests.yml` |
 | codecov | statement coverage of `src/duckie_pomdp` in that run, currently 52% | uploaded from the same workflow |
 | full suite 721/721 | every group, with the artifacts present | measured locally |
-| V&V spec 65/65 | reported numbers recomputed from the ledgers | the command above, run locally |
+| V&V spec | requirements in `.vnvspec/spec.yaml` whose checks are green in the committed report | GitHub Actions, `.github/workflows/vnv.yml` |
 
-The first two badges are live. The last two are measured values describing this
-commit, because both need the multi-gigabyte evaluation artifacts that are not
-distributed here.
+Three of the four badges are live. Only the full-suite count is a measured
+value describing this commit, because it needs the multi-gigabyte evaluation
+artifacts that are not distributed here. The V&V badge is live in a weaker
+sense worth stating plainly: the workflow re-verifies the requirement mapping
+against the committed report on every push, but that report was produced
+locally, since the verifier needs those same artifacts.
 
 CI leaves the seven simulator modules out on purpose, with
 `SKIP_SIMULATOR_TESTS=1`. They pass against a local Gym-Duckietown install but

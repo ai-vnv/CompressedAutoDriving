@@ -9,6 +9,9 @@ Run it after the evaluation artifacts have been regenerated:
 
     python experiments/verification/verify_reported_numbers.py
 
+Pass ``--json PATH`` to also write the machine-readable report that
+``.vnvspec/spec.yaml`` and the V&V workflow read.
+
 Exit status is 0 when every check passes, 1 when any check fails, and 2 when
 the artifacts are not present.
 """
@@ -26,8 +29,15 @@ F18 = ART / "f18_fp16_control_v1"
 F15 = ART / "f15_cross_curriculum_recovery_v1"
 CUR = ["C0", "C1", "C2", "C3", "C4"]
 
-checks: list[tuple[str, object, object, bool]] = []
+checks: list[dict] = []
 skipped: list[str] = []
+GROUP = "unassigned"
+
+
+def group(name):
+    """Every check declared after this call belongs to that requirement group."""
+    global GROUP
+    GROUP = name
 
 
 def check(name, got, expect, tol=0.0):
@@ -36,7 +46,19 @@ def check(name, got, expect, tol=0.0):
         ok = abs(got - expect) <= tol
     else:
         ok = got == expect
-    checks.append((name, got, expect, ok))
+    checks.append({"name": name, "group": GROUP, "passed": bool(ok),
+                   "recomputed": _plain(got), "reported": _plain(expect)})
+
+
+def _plain(value):
+    """Make a recomputed value JSON-serializable without changing it."""
+    if isinstance(value, (str, bool)) or value is None:
+        return value
+    if isinstance(value, (list, tuple)):
+        return [_plain(v) for v in value]
+    if hasattr(value, "item"):
+        return value.item()
+    return value
 
 
 def read_rows(path):
@@ -83,6 +105,7 @@ def source(pid):
     return r18 if pid == "F16H" else r17
 
 
+group("completions")
 # --- 1. completion table and verdicts, exactly as printed -------------------
 COMPLETIONS = {
     "A0": [8, 7, 7, 7, 8], "A1": [3, 3, 0, 0, 0], "A2": [0, 0, 0, 8, 8],
@@ -105,6 +128,7 @@ for pid, expect in VERDICTS.items():
                   for c in CUR)
     check(f"verdict string {pid}", got, expect)
 
+group("failure-modes")
 # --- 2. failure-mode numbers quoted in the text -----------------------------
 check("A8 C3 stop violations of 8",
       round(fid(r17, "A8", "C3", "stop_violation_rate") * 8), 4)
@@ -123,6 +147,7 @@ check("A0 has exactly three 7/8 curricula",
 check("A8 C4 completions", round(fid(r17, "A8", "C4", "completion_rate") * 8), 1)
 check("A6 C4 completions", round(fid(r17, "A6", "C4", "completion_rate") * 8), 7)
 
+group("fidelity")
 # --- 3. action-level fidelity ------------------------------------------------
 check("A8 C3 omega MAE", fid(fid17, "A8", "C3", "omega_mae_rad_s"), 0.055, 0.0005)
 check("A6 C3 omega MAE", fid(fid17, "A6", "C3", "omega_mae_rad_s"), 0.086, 0.0005)
@@ -136,6 +161,7 @@ check("FP16 vs FP32 maximum progress gap",
                     - fid(r18, "A3", c, "mean_progress_m")) for c in CUR), 4),
       0.008, 0.0005)
 
+group("cost")
 # --- 4. actor cost ----------------------------------------------------------
 bench = json.loads((F18 / "results/precision_benchmark.json").read_text())["rows"]
 check("A3 serialized bytes", bench["A3"]["serialized_bytes"], 29295)
@@ -159,6 +185,7 @@ else:
     skipped.append("A6 parameter memory (run experiments/paper_figures/"
                    "compute_int8_memory.py first)")
 
+group("protocol")
 # --- 5. protocol invariants --------------------------------------------------
 check("total evaluated episodes", 9 * 40 + 40, 400)
 gate = json.loads((F18 / "integrity/fp16_validity_gate.json").read_text())
@@ -180,8 +207,11 @@ kd = np.load(F15 / "recovery/datasets/multicurriculum_public_states.npz")
 keys = [k for k in kd.files if "state" in k or "public" in k]
 n_states = int(kd[keys[0]].shape[0] if keys
                else max(kd[k].shape[0] for k in kd.files))
+group("rehearsal-data")
 check("balanced rehearsal dataset states", n_states, 62176)
+group("protocol")
 
+group("contract")
 # --- 6. configuration and curriculum contract --------------------------------
 sys.path.insert(0, str(ROOT / "src"))
 from duckie_pomdp.control.ppo_protocol import load_ppo_curriculum_protocol  # noqa: E402
@@ -220,13 +250,28 @@ else:
                    "with the repository)")
 
 # --- report ------------------------------------------------------------------
-failed = [c for c in checks if not c[3]]
-for name, got, expect, ok in checks:
-    print(f"  {'OK  ' if ok else 'FAIL'} {name}: recomputed={got} reported={expect}")
+failed = [c for c in checks if not c["passed"]]
+for c in checks:
+    mark = "OK  " if c["passed"] else "FAIL"
+    print(f"  {mark} [{c['group']}] {c['name']}: "
+          f"recomputed={c['recomputed']} reported={c['reported']}")
 for note in skipped:
     print(f"  SKIP {note}")
 
 print()
 print(f"{len(checks) - len(failed)}/{len(checks)} checks passed"
       + (f", {len(skipped)} skipped" if skipped else ""))
+
+if "--json" in sys.argv:
+    out = Path(sys.argv[sys.argv.index("--json") + 1])
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({
+        "spec": "verify_reported_numbers",
+        "total": len(checks),
+        "passed": len(checks) - len(failed),
+        "skipped": skipped,
+        "checks": checks,
+    }, indent=2) + "\n", encoding="utf-8")
+    print(f"wrote {out}")
+
 raise SystemExit(1 if failed else 0)

@@ -1,0 +1,153 @@
+# Verification and validation specification for CompressedAutoDriving.
+#
+# Each requirement is one of the claims this study makes publicly, mapped to
+# the checks that re-establish it from the evaluation ledgers. Nothing here is
+# aspirational: every requirement below is currently verified by
+# experiments/verification/verify_reported_numbers.py, whose machine-readable
+# result is committed at experiments/verification/verification_report.json.
+#
+# The check_groups in each requirement's metadata name the groups that the
+# verifier tags its checks with, which is how the V&V workflow counts a
+# requirement as verified.
+
+name: compressed-auto-driving
+version: "1.0.0"
+description: >
+  A stage-wise closed-loop evaluation of a belief-state visuomotor driving
+  policy as it passes through structured pruning, knowledge distillation,
+  integer quantization and a reduced floating-point control. The verification
+  methods below are executable: each recomputes a number reported in the
+  manuscript from the result ledgers, the frozen configurations, or the
+  protocol loader, rather than restating it.
+
+requirements:
+  - id: REQ-EVAL-MATCHED-001
+    statement: The system shall evaluate every pipeline configuration on the same curricula using the same fixed seeds.
+    rationale: A verdict difference between configurations is attributable to compression only when the scenario set and the seeds are held fixed.
+    verification_method: test
+    acceptance_criteria:
+      - The recomputed completion counts reproduce the reported table for all ten configurations.
+      - The evaluated episode count equals 400 episodes.
+    priority: blocking
+    metadata:
+      check_groups: ["completions"]
+
+  - id: REQ-EVAL-VERDICT-001
+    statement: The system shall decide each per-curriculum verdict from acceptance criteria fixed before the results were opened.
+    rationale: Thresholds chosen after seeing results turn an evaluation into a selection procedure.
+    verification_method: analysis
+    acceptance_criteria:
+      - The recomputed verdict strings reproduce the reported ones for all nine compressed configurations.
+      - The acceptance thresholds read from the frozen configuration match the reported values.
+    priority: blocking
+    metadata:
+      check_groups: ["completions", "contract"]
+
+  - id: REQ-PRUNE-LOSS-001
+    statement: The system shall record a failing verdict on every curriculum for the pruned actor before any recovery stage is applied.
+    rationale: Locating the stage at which driving capability is first lost is the first of the four questions the study asks.
+    verification_method: test
+    acceptance_criteria:
+      - The recomputed stop-violation rate for the pruned actor on the stop curriculum equals one.
+      - The recomputed invalid-pose and lane-failure rates reproduce the reported failure modes.
+    priority: blocking
+    metadata:
+      check_groups: ["failure-modes"]
+
+  - id: REQ-RECOVERY-COVERAGE-001
+    statement: The system shall restore only the curricula covered by the rehearsal data of the distillation stage.
+    rationale: Attributing the recovery to the rehearsal coverage rather than to distillation itself requires both coverages to be measured under one protocol.
+    verification_method: test
+    acceptance_criteria:
+      - The configuration distilled on the hardest curriculum alone passes exactly the two stop curricula.
+      - The configuration distilled on balanced data passes all five curricula.
+    priority: blocking
+    metadata:
+      check_groups: ["completions"]
+
+  - id: REQ-REHEARSAL-DATA-001
+    statement: The system shall rehearse the balanced student on the recorded belief-state set the study documents.
+    rationale: The recovery claim is only interpretable against a stated rehearsal set size.
+    verification_method: inspection
+    acceptance_criteria:
+      - The state count read from the committed dataset equals 62176 states.
+    priority: high
+    metadata:
+      check_groups: ["rehearsal-data"]
+
+  - id: REQ-QUANT-REGRESSION-001
+    statement: The system shall lose the stop curricula on both integer quantization routes taken from the recovered checkpoint.
+    rationale: This is the central finding, and it must be read from the ledgers rather than asserted.
+    verification_method: test
+    acceptance_criteria:
+      - Both integer configurations reproduce the reported verdict string for the five curricula.
+      - The recomputed stop-task completion counts reproduce the reported drop.
+    priority: blocking
+    metadata:
+      check_groups: ["completions", "failure-modes"]
+
+  - id: REQ-CONTROL-PRECISION-001
+    statement: The system shall preserve every curriculum the recovered checkpoint passed when that checkpoint is cast to half precision.
+    rationale: Without this control the integer result cannot be separated from reduced precision in general.
+    verification_method: test
+    acceptance_criteria:
+      - The half-precision configuration reproduces a passing verdict on all five curricula.
+      - The recomputed action-error and progress gaps against its parent stay within the reported bounds.
+    priority: blocking
+    metadata:
+      check_groups: ["completions", "fidelity"]
+
+  - id: REQ-FIDELITY-DISSOCIATION-001
+    statement: The system shall report action-level fidelity separately from the task verdicts.
+    rationale: The study reports that closer action agreement accompanies worse driving, which is only visible when the two axes are measured independently.
+    verification_method: analysis
+    acceptance_criteria:
+      - The recomputed action errors reproduce the reported values for both integer routes.
+      - The recomputed rank correlation for the unpruned control reproduces the reported value below the acceptance threshold.
+    priority: high
+    metadata:
+      check_groups: ["fidelity"]
+
+  - id: REQ-COST-001
+    statement: The system shall reproduce the reported actor cost figures from the recorded benchmark.
+    rationale: Size and latency are the numbers a deployment decision is made on, so they carry the same evidence burden as the verdicts.
+    verification_method: test
+    acceptance_criteria:
+      - The serialized size, parameter memory and median latency of each precision reproduce the reported values.
+      - The reported parameter reduction and the half-precision latency increase are recomputed rather than quoted.
+    priority: high
+    metadata:
+      check_groups: ["cost"]
+
+  - id: REQ-DETERMINISM-001
+    statement: The system shall reproduce an episode bit for bit on every execution path used in the study.
+    rationale: Comparing configurations on matched seeds is meaningless if a single configuration does not reproduce itself.
+    verification_method: test
+    acceptance_criteria:
+      - The recorded determinism addenda for the integer and half-precision paths both classify as passing.
+      - The half-precision validity record confirms accumulation wider than the storage format.
+    priority: blocking
+    metadata:
+      check_groups: ["protocol"]
+
+  - id: REQ-HOLDOUT-SEALED-001
+    statement: The system shall leave the reserved evaluation seeds unopened for the duration of the study.
+    rationale: A holdout that is consulted during development no longer bounds anything.
+    verification_method: inspection
+    acceptance_criteria:
+      - The recorded eligibility outcome states that the final holdout was never opened.
+      - The evaluation seed list and the reserved seed list share no element.
+    priority: blocking
+    metadata:
+      check_groups: ["protocol", "contract"]
+
+  - id: REQ-BELIEF-CONTRACT-001
+    statement: The system shall present the policy with the belief vector the study documents.
+    rationale: The system under test is defined by its input contract, so a drift there invalidates every comparison built on it.
+    verification_method: inspection
+    acceptance_criteria:
+      - The belief dimension read from the protocol loader equals 29 components.
+      - The curriculum horizons read from the protocol loader reproduce the reported step limits.
+    priority: blocking
+    metadata:
+      check_groups: ["contract"]
