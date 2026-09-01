@@ -5,7 +5,7 @@
 [![tests](https://github.com/ai-vnv/CompressedAutoDriving/actions/workflows/tests.yml/badge.svg)](https://github.com/ai-vnv/CompressedAutoDriving/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/ai-vnv/CompressedAutoDriving/branch/main/graph/badge.svg)](https://codecov.io/gh/ai-vnv/CompressedAutoDriving)
 [![full suite](https://img.shields.io/badge/full%20suite-721%2F721%20pass-2ea44f)](#verification)
-[![V&V spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fai-vnv.github.io%2FCompressedAutoDriving%2Fvnv-badge.json)](https://github.com/ai-vnv/CompressedAutoDriving/blob/main/.vnvspec/spec.yaml)
+[![V&V spec](https://img.shields.io/endpoint?url=https%3A%2F%2Fai-vnv.github.io%2FCompressedAutoDriving%2Fvnv-badge.json&cacheSeconds=300)](https://github.com/ai-vnv/CompressedAutoDriving/blob/main/.vnvspec/spec.yaml)
 [![license](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
 
 Where does a compressed driving policy stop being able to drive, and what brings
