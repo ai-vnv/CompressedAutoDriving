@@ -1,5 +1,16 @@
-# Pin the existing simulator compatibility envelope before adding YOLO.
-numpy<2
-gym<0.27
-pyglet<2
-
+# Versions the study was run and validated with. The duckietown stack resolves
+# transitively to mutually incompatible releases if left unpinned, so the
+# simulator chain is pinned exactly rather than by range.
+numpy==1.26.4
+gym==0.26.2
+gym-notices==0.1.0
+pyglet==1.5.27
+duckietown-gym-daffy==6.1.34
+duckietown-world-daffy==6.4.3
+duckietown-serialization-ds1==1.1.1
+PyGeometry-z6==2.1.5
+aido-protocols-daffy==6.1.1
+zuper-commons-z6==6.2.4
+zuper-typing-z6==6.2.3
+zuper-ipce-z6==6.1.2
+zuper-nodes-z6==6.2.17
