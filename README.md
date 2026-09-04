@@ -172,8 +172,10 @@ actor itself is under 0.1% of end-to-end step cost, since perception dominates.
 ## Repository structure
 
 ```
-models/         trained weights: actors A0-A9, YOLO11n, MobileNetV3 lane model
-                (each SHA256-verified against the study registries; MANIFEST.md)
+models/actors/  the ten actor checkpoints A0-A9, one per pipeline stage
+models/         the perception weights the actors are evaluated behind:
+                YOLO11n and the MobileNetV3 lane model. Every file is
+                SHA256-verified against the study registries in MANIFEST.md
 configs/        experiment configurations: curricula, acceptance criteria,
                 seeds, quantization settings, hash-pinned protocol provenance
 experiments/    evaluation runners, protocol-freeze scripts, the

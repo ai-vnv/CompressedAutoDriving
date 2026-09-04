@@ -13,7 +13,7 @@ from pathlib import Path
 import torch
 
 ROOT = Path(__file__).resolve().parents[2]
-MODEL = ROOT / "models" / "actor_A6_kd_balanced_ptq_int8.pt"
+MODEL = ROOT / "models" / "actors" / "actor_A6_kd_balanced_ptq_int8.pt"
 
 m = torch.jit.load(str(MODEL), map_location="cpu")
 layers, n_w, n_b, n_ch = [], 0, 0, 0

@@ -1,5 +1,5 @@
 {
-  "model": "models/actor_A6_kd_balanced_ptq_int8.pt",
+  "model": "models/actors/actor_A6_kd_balanced_ptq_int8.pt",
   "convention": "qint8 weights x1B + fp32 bias x4B + per-channel (fp32 scale + int32 zero point) x8B",
   "layers": [
     {
